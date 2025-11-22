@@ -673,15 +673,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-from pathlib import Path
-
-content = """streamlit
-pandas
-numpy
-plotly
-"""
-
-path = Path("/mnt/data/requirements.txt")
-path.write_text(content, encoding="utf-8")
-
-path
