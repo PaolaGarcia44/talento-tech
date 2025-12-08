@@ -1,242 +1,157 @@
-# app.py
-"""
-Dashboard Unificado de Análisis de Delitos Ambientales
-=====================================================
-GRUPO 3 de Talentotech.
-"""
+# ======================================================================
+# Dashboard Unificado de Delitos Ambientales - Talentotech
+# Adaptado automáticamente al dataset BD_Delitos_ambientales.csv
+# ======================================================================
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-from typing import Dict, List, Any, Optional
 
-# ==============================================================================
-# CONFIGURACIÓN INICIAL Y ESTILO
-# ==============================================================================
-
+# ----------------------------------------------------------------------
+# CONFIGURACIÓN INICIAL
+# ----------------------------------------------------------------------
 st.set_page_config(
-    page_title="🌎 Delitos Ambientales - Explorador",
+    page_title="Dashboard Delitos Ambientales",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded"
 )
 
-# ==============================================================================
-# ESTILO GLOBAL (CSS) — VISUAL MODERNO Y LIMPIO
-# ==============================================================================
+st.title("🌱 Dashboard Delitos Ambientales – Colombia")
 
-st.markdown("""
-<style>
 
-.stApp {
-    background-image: url("https://i.pinimg.com/736x/39/c7/1e/39c71e43cd06601a698edc75859dd674.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-}
-
-/* Capa difuminada */
-.stApp::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    backdrop-filter: blur(12px);
-    z-index: -1;
-}
-
-/* TITULOS */
-h1, h2, h3 {
-    color: #111 !important;
-    text-shadow: none !important;
-}
-
-h1 {
-    font-weight: 800;
-    margin-bottom: 15px;
-    background: rgba(255,255,255,0.75);
-    padding: 12px 18px;
-    border-left: 6px solid #333;
-    border-radius: 6px;
-}
-
-h2 {
-    border-left: 5px solid #222;
-    padding-left: 10px;
-}
-
-/* Texto general */
-p, li, span, div {
-    color: #111 !important;
-}
-
-/* MODO TARJETAS PARA KPIs */
-.stMetric > div {
-    background: rgba(255,255,255,0.9);
-    padding: 15px;
-    border-radius: 10px;
-    border: 1px solid #222;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-}
-
-.stMetric label {
-    color: #222 !important;
-    font-weight: 600;
-}
-
-/* Tabs */
-.stTabs button {
-    background: rgba(255,255,255,0.85) !important;
-    color: #111 !important;
-    font-weight: 700 !important;
-    border-radius: 6px 6px 0 0 !important;
-    border: 1px solid #333 !important;
-}
-
-.stTabs button:hover {
-    background: #e6e6e6 !important;
-}
-
-/* Plotly texto negro */
-.xtick, .ytick, .legendtext, .gtitle, .xaxislayer-title, .yaxislayer-title {
-    fill: #000 !important;
-    color: #000 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# ==============================================================================
-# FUNCIONES DE LIMPIEZA Y PREPROCESAMIENTO
-# ==============================================================================
-
-REEMPLAZOS = {
-    "Ã‘": "N", "Ã±": "N", "Ñ": "N", "ñ": "N",
-    "Ã¡": "A", "Ã©": "E", "Ã­": "I", "Ã³": "O", "Ãº": "U",
-    "á": "A", "é": "E", "í": "I", "ó": "O", "ú": "U"
-}
-
-def corregir(txt):
-    if pd.isna(txt): return ""
-    txt = str(txt)
-    for malo, bueno in REEMPLAZOS.items():
-        txt = txt.replace(malo, bueno)
-    return txt.strip()
-
-def limpiar_texto(txt):
-    if pd.isna(txt): return ""
-    return corregir(txt).upper().strip()
-
-def estandarizar_columnas(df):
-    df = df.copy()
-    df.columns = [limpiar_texto(c).replace(" ", "_") for c in df.columns]
-    return df
-
+# ----------------------------------------------------------------------
+# CARGA Y LIMPIEZA DE DATOS
+# ----------------------------------------------------------------------
 @st.cache_data
-def cargar_datos(archivo):
-    if archivo is None:
-        return pd.DataFrame()
+def cargar_datos(uploaded):
+    df = pd.read_csv(uploaded, encoding="latin1")
+    
+    # Arreglo de nombre raro
+    df = df.rename(columns={"ï»¿FECHA HECHO": "FECHA_HECHO"})
 
-    df = pd.read_csv(archivo)
-    df = estandarizar_columnas(df)
+    # Limpieza de columnas
+    df.columns = df.columns.str.strip().str.upper().str.replace(" ", "_")
 
-    for col in df.select_dtypes(include=["object"]):
-        df[col] = df[col].apply(limpiar_texto)
+    # Conversión de fecha
+    df["FECHA_HECHO"] = pd.to_datetime(df["FECHA_HECHO"], format="%d/%m/%Y", errors='coerce')
 
-    if "FECHA_HECHO" in df.columns:
-        df["ANIO"] = df["FECHA_HECHO"].astype(str).str[-4:].astype(int)
-
-    if "CANTIDAD" not in df.columns:
-        df["CANTIDAD"] = 1
-
-    df["CANTIDAD"] = pd.to_numeric(df["CANTIDAD"], errors="coerce").fillna(1)
-
-    df.drop_duplicates(inplace=True)
-    df.fillna("", inplace=True)
-
-    if "DESCRIPCION_CONDUCTA" in df.columns:
-        df["ARTICULO"] = df["DESCRIPCION_CONDUCTA"].str.split('.').str[0]
+    # Año
+    df["AÑO"] = df["FECHA_HECHO"].dt.year
 
     return df
 
-# ==============================================================================
-# FUNCIONES DE VISUALIZACIÓN
-# ==============================================================================
 
-def tendencia_anual(df):
-    if df.empty:
-        return go.Figure()
+uploaded_file = st.sidebar.file_uploader("Sube el archivo BD_Delitos_ambientales.csv", type=["csv"])
 
-    max_a = df["ANIO"].max()
-    bins = [2000, 2005, 2010, 2015, 2020, max_a + 1]
-    labels = [f"{bins[i]}-{bins[i+1]-1}" for i in range(len(bins)-1)]
+if uploaded_file:
 
-    df2 = df[df["ANIO"] >= 2000].copy()
-    df2["INTERVALO"] = pd.cut(df2["ANIO"], bins=bins, labels=labels, right=False)
+    df = cargar_datos(uploaded_file)
 
-    data = df2.groupby("INTERVALO")["CANTIDAD"].sum().reset_index()
+    st.subheader("Vista previa del dataset")
+    st.dataframe(df.head(), use_container_width=True)
 
-    fig = px.bar(
-        data, x="INTERVALO", y="CANTIDAD",
-        color="CANTIDAD", text_auto='.2s',
-        color_continuous_scale=px.colors.sequential.Teal,
+    # ------------------------------------------------------------------
+    # FILTROS DEL DASHBOARD
+    # ------------------------------------------------------------------
+    st.sidebar.header("Filtros")
+
+    años = sorted(df["AÑO"].dropna().unique())
+    dep = sorted(df["DEPARTAMENTO"].dropna().unique())
+    muni = sorted(df["MUNICIPIO"].dropna().unique())
+    conductas = sorted(df["DESCRIPCION_CONDUCTA"].dropna().unique())
+    zonas = sorted(df["ZONA"].dropna().unique())
+
+    filtro_año = st.sidebar.multiselect("Año", años)
+    filtro_dep = st.sidebar.multiselect("Departamento", dep)
+    filtro_muni = st.sidebar.multiselect("Municipio", muni)
+    filtro_conducta = st.sidebar.multiselect("Tipo de conducta", conductas)
+    filtro_zona = st.sidebar.multiselect("Zona", zonas)
+
+    df_filtrado = df.copy()
+
+    if filtro_año:
+        df_filtrado = df_filtrado[df_filtrado["AÑO"].isin(filtro_año)]
+    if filtro_dep:
+        df_filtrado = df_filtrado[df_filtrado["DEPARTAMENTO"].isin(filtro_dep)]
+    if filtro_muni:
+        df_filtrado = df_filtrado[df_filtrado["MUNICIPIO"].isin(filtro_muni)]
+    if filtro_conducta:
+        df_filtrado = df_filtrado[df_filtrado["DESCRIPCION_CONDUCTA"].isin(filtro_conducta)]
+    if filtro_zona:
+        df_filtrado = df_filtrado[df_filtrado["ZONA"].isin(filtro_zona)]
+
+    # ------------------------------------------------------------------
+    # TARJETAS KPI
+    # ------------------------------------------------------------------
+    st.subheader("Indicadores generales")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total de casos", int(df_filtrado["CANTIDAD"].sum()))
+    col2.metric("Departamentos analizados", df_filtrado["DEPARTAMENTO"].nunique())
+    col3.metric("Municipios analizados", df_filtrado["MUNICIPIO"].nunique())
+
+    if not df_filtrado.empty:
+        año_min = int(df_filtrado["AÑO"].min())
+        año_max = int(df_filtrado["AÑO"].max())
+        col4.metric("Rango de años", f"{año_min} - {año_max}")
+    else:
+        col4.metric("Rango de años", "Sin datos")
+
+    # ------------------------------------------------------------------
+    # GRÁFICOS PRINCIPALES
+    # ------------------------------------------------------------------
+    st.subheader("Visualizaciones")
+
+    # --- 1. Casos por departamento ---
+    fig_dep = px.bar(
+        df_filtrado.groupby("DEPARTAMENTO")["CANTIDAD"].sum().sort_values(ascending=False).head(15),
+        title="Casos por departamento",
+        labels={"value": "Casos", "DEPARTAMENTO": "Departamento"}
     )
-    fig.update_layout(
-        title="Tendencia de Casos por Intervalos de Año",
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
+    st.plotly_chart(fig_dep, use_container_width=True)
+
+    # --- 2. Top 20 municipios ---
+    fig_muni = px.bar(
+        df_filtrado.groupby("MUNICIPIO")["CANTIDAD"].sum().sort_values(ascending=False).head(20),
+        title="Top 20 municipios con más casos",
+        labels={"value": "Casos", "MUNICIPIO": "Municipio"}
     )
-    return fig
+    st.plotly_chart(fig_muni, use_container_width=True)
 
-def top_conductas(df):
-    if df.empty:
-        return go.Figure()
-
-    data = df.groupby("ARTICULO")["CANTIDAD"].sum().nlargest(8).reset_index()
-
-    fig = px.bar(
-        data, y="ARTICULO", x="CANTIDAD",
-        orientation="h", text_auto='.2s',
-        color="CANTIDAD",
-        color_continuous_scale=px.colors.sequential.Plasma,
+    # --- 3. Conductas más comunes ---
+    fig_cond = px.bar(
+        df_filtrado["DESCRIPCION_CONDUCTA"].value_counts().head(15),
+        title="Tipos de conducta más frecuentes",
+        labels={"value": "Número de registros", "index": "Conducta"}
     )
-    fig.update_layout(
-        title="Top 8 Conductas",
-        yaxis={"autorange": "reversed"},
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
+    st.plotly_chart(fig_cond, use_container_width=True)
+
+    # --- 4. Serie temporal anual ---
+    serie = df_filtrado.groupby("AÑO")["CANTIDAD"].sum().reset_index()
+    fig_year = px.line(
+        serie,
+        x="AÑO",
+        y="CANTIDAD",
+        markers=True,
+        title="Tendencia anual de delitos ambientales"
     )
-    return fig
+    st.plotly_chart(fig_year, use_container_width=True)
 
-# Puedes agregar el resto de gráficos siguiendo el mismo estilo limpio.
+    # --- 5. Distribución por zona ---
+    fig_zona = px.pie(
+        df_filtrado,
+        names="ZONA",
+        values="CANTIDAD",
+        title="Distribución entre zona Urbana y Rural"
+    )
+    st.plotly_chart(fig_zona, use_container_width=True)
 
-# ==============================================================================
-# INTERFAZ PRINCIPAL
-# ==============================================================================
+    # ------------------------------------------------------------------
+    # TABLA RESULTANTE
+    # ------------------------------------------------------------------
+    st.subheader("Tabla filtrada")
+    st.dataframe(df_filtrado, use_container_width=True)
 
-st.title("🌱 Dashboard de Delitos Ambientales")
-
-archivo = st.file_uploader("Cargar archivo CSV", type=["csv"])
-
-df = cargar_datos(archivo)
-
-if df.empty:
-    st.info("Sube un archivo CSV para iniciar el análisis.")
-    st.stop()
-
-# KPIs
-col1, col2, col3 = st.columns(3)
-
-col1.metric("Total Casos", f"{df['CANTIDAD'].sum():,}")
-col2.metric("Años Analizados", f"{df['ANIO'].min()} - {df['ANIO'].max()}")
-col3.metric("Conductas Únicas", df["ARTICULO"].nunique())
-
-# Tabs
-t1, t2 = st.tabs(["📈 Tendencia", "📊 Top Conductas"])
-
-with t1:
-    st.plotly_chart(tendencia_anual(df), use_container_width=True)
-
-with t2:
-    st.plotly_chart(top_conductas(df), use_container_width=True)
+else:
+    st.info("Sube el archivo BD_Delitos_ambientales.csv para iniciar.")
