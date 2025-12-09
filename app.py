@@ -843,34 +843,7 @@ def main():
             </p>
         </div>
         """, unsafe_allow_html=True)
-    
-    # --- SECCIÓN: INTEGRANTES DEL GRUPO ---
-    with st.container():
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 150, 255, 0.1)); 
-                    padding: 20px; border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.3);">
-            <h3 style="color: #00d4ff; text-align: center;">✨ GRUPO 3 - TALENTOTECH</h3>
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px;">
-                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                    👤 Edwin Hernan Velez Urrego
-                </div>
-                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                    👤 Paola Andrea Garcia Tangarife
-                </div>
-                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                    👤 Yeraldin Campo Espinal
-                </div>
-                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                    👤 Valentina Restrepo Angel
-                </div>
-                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
-                    👤 Sara Melisa Londoño
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<hr>", unsafe_allow_html=True)
+
     
     # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
     with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
@@ -1087,39 +1060,7 @@ def main():
     # --- Pie de página profesional ---
     st.markdown("<hr>", unsafe_allow_html=True)
     
-    col_footer1, col_footer2, col_footer3 = st.columns(3)
     
-    with col_footer1:
-        st.markdown("""
-        <div style="text-align: center;">
-            <p style="color: #00d4ff; font-weight: bold;">🌍 IMPACTO AMBIENTAL</p>
-            <p style="color: #888888; font-size: 0.9rem;">Análisis para la preservación</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_footer2:
-        st.markdown("""
-        <div style="text-align: center;">
-            <p style="color: #00d4ff; font-weight: bold;">📊 DATOS CIENTÍFICOS</p>
-            <p style="color: #888888; font-size: 0.9rem;">Decisiones basadas en evidencia</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_footer3:
-        st.markdown("""
-        <div style="text-align: center;">
-            <p style="color: #00d4ff; font-weight: bold;">🎯 ENFOQUE ESTRATÉGICO</p>
-            <p style="color: #888888; font-size: 0.9rem;">Maximizando la eficiencia</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-        <p style="color: #666666; font-size: 0.9rem;">
-        Dashboard desarrollado para el <strong>Proyecto Final de Análisis de Datos</strong> | 
-        Tecnologías: Streamlit, Plotly, Pandas | 
-        <strong>GRUPO 3 - TALENTOTECH</strong>
-        </p>
         <p style="color: #444444; font-size: 0.8rem; margin-top: 10px;">
         © 2024 Análisis de Delitos Ambientales. Todos los derechos reservados.
         </p>
