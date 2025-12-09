@@ -860,10 +860,6 @@ def main():
             archivo_path_default = "BD_Delitos_ambientales.csv"
             data_input = uploaded_file if uploaded_file is not None else archivo_path_default
             
-        with col_config2:
-            # Configuración del Tema
-            st.markdown("**🎨 Configuración de Visualización**")
-            st.caption("Tema optimizado para fondo oscuro")
         
         st.subheader("🔍 Estado de Procesamiento")
 
