@@ -847,21 +847,8 @@ def main():
     
     # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
     with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
-        
-        col_config1, col_config2 = st.columns(2)
-        
-        with col_config1:
-            # Opción de carga de archivo
-            uploaded_file = st.file_uploader(
-                "**📁 Subir archivo CSV:**",
-                type=["csv"],
-                help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
-            )
-            archivo_path_default = "BD_Delitos_ambientales.csv"
-            data_input = uploaded_file if uploaded_file is not None else archivo_path_default
-            
-        
-        st.subheader("🔍 Estado de Procesamiento")
+    
+            st.subheader("🔍 Estado de Procesamiento")
 
     # --- Carga de Datos y Verificación de la Integridad ---
     with st.spinner('🔄 Cargando, limpiando y estandarizando datos...'):
