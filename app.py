@@ -722,4 +722,169 @@ def main():
     st.markdown("---")
     
     
-    # 🔗 CONFIGURACIÓN Y CARGA
+    # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
+   
+    with st.expander("🛠️ Configuración y Carga de Datos"):
+        
+        # Opción de carga de archivo (Define data_input)
+        uploaded_file = st.file_uploader(
+            "1. Cargar archivo CSV:",
+            type=["csv"],
+            help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
+        )
+        archivo_path_default = "BD_Delitos_ambientales.csv"
+        data_input = uploaded_file if uploaded_file is not None else archivo_path_default
+        
+        # Configuración del Tema (Define plotly_theme)
+        theme_options = {
+            "Claro (Default y Alto Contraste)": "plotly_white", 
+            "Sin Tema (Para usar solo CSS)": None,
+        }
+        selected_theme_key = st.selectbox(
+            "Tema de Visualización:", 
+            list(theme_options.keys())
+        )
+        # Asignación segura del tema
+        plotly_theme = theme_options[selected_theme_key]
+        
+        st.subheader("Estado de Procesamiento")
+
+    # --- Carga de Datos y Verificación de la Integridad ---
+    with st.spinner('Cargando, limpiando y estandarizando datos...'):
+        df = cargar_y_limpiar_datos(data_input) 
+
+    # Verificación de datos
+    if df.empty:
+        st.error("⚠️ No se pudo cargar o procesar el archivo de datos. Por favor, suba un archivo CSV válido.")
+        return 
+    
+    st.success("✅ ¡Datos cargados y listos para análisis!")
+    with st.expander("Ver Metadatos del DataFrame"):
+        st.dataframe(df.head(3))
+        st.info(f"Registros finales: **{len(df):,}**")
+    
+    st.markdown("---") # Separador entre el estado de carga y los KPIs
+    
+    # --------------------------------------------------------------------------
+    # RESUMEN (KPIs DINÁMICOS)
+    # --------------------------------------------------------------------------
+    st.subheader("📊 Panorama General: KPIs Clave")
+    
+    kpis = generar_kpis_y_analisis(df)
+    
+    col_kpi1, col_kpi2, col_kpi3, col_kpi4 = st.columns(4)
+
+    with col_kpi1: 
+        st.metric(
+            label="🚨 Total Casos Registrados", 
+            value=f"{kpis.get('Total Casos', 0):,}",
+            delta=kpis.get('Rango Años', 'N/A')
+        )
+
+    with col_kpi2:
+        st.metric(
+            label="💥 Foco de Delito (Artículo Principal)",
+            value=kpis.get('Delito Mas Frecuente', 'N/A')
+        )
+
+    with col_kpi3:
+        st.metric(
+            label="📍 Geografía Crítica (Departamento)",
+            value=kpis.get('Departamento Mas Afecstado', 'N/A')
+        )
+
+    tendencia_value = f"{kpis.get('Tendencia General', 'N/A').upper()}"
+    tendencia_delta = kpis.get('Tendencia Diff', 0)
+    
+    with col_kpi4:
+        st.metric(
+            label="📈 Variación Histórica (%)",
+            value=tendencia_value,
+            delta=f"{tendencia_delta:.1f}% vs Año Inicial",
+            delta_color="inverse" if tendencia_delta < -5 else "normal"
+        )
+        
+    st.markdown("---") # Separador entre los KPIs y las Pestañas
+
+    # --------------------------------------------------------------------------
+    # 📑 ESTRUCTURA MODULAR CON PESTAÑAS
+    # --------------------------------------------------------------------------
+    
+    tab1, tab2, tab3 = st.tabs(["📉 Evolución Temporal", "🗺️ Concentración Geográfica", "🎯 Focos de Decisión"])
+
+    # --- PESTAÑA EVOLUCIÓN TEMPORAL ---
+    with tab1:
+        st.header("Análisis de la Dinámica del Delito Ambiental")
+        
+        col_t1_1, col_t1_2 = st.columns(2)
+        
+        with col_t1_1:
+            fig_evolucion = generar_evolucion_top5_conductas(df, theme=plotly_theme)
+            st.plotly_chart(fig_evolucion, use_container_width=True)
+
+        with col_t1_2:
+            fig_heatmap = generar_heatmap_conducta_anual(df, theme=plotly_theme)
+            st.plotly_chart(fig_heatmap, use_container_width=True)
+            
+        st.info("💡 **Análisis de la Pestaña:** El gráfico de líneas muestra la trayectoria individual de los delitos más grandes. El Mapa de Calor (**se hizo** con escala logarítmica) revela visualmente cuáles delitos persisten o emergen con fuerza a lo largo de los años.")
+
+    # --- PESTAÑA CONCENTRACIÓN GEOGRÁFICA Y TIPOLÓGICA ---
+    with tab2:
+        st.header("Distribución de Casos por Ubicación y Tipología")
+        
+        col_t2_1, col_t2_2 = st.columns(2)
+
+        with col_t2_1:
+            fig_depto = generar_top_departamentos(df, theme=plotly_theme)
+            st.plotly_chart(fig_depto, use_container_width=True)
+        
+        with col_t2_2:
+            fig_conducta = generar_top_conductas(df, theme=plotly_theme)
+            st.plotly_chart(fig_conducta, use_container_width=True)
+            
+        st.info("💡 **Análisis de la Pestaña:** Se hizo una comparación de las concentraciones por Departamento (dónde ocurre) y por Artículo (qué ocurre). El gráfico de tendencia a largo plazo nos sirve de contexto general.")
+        
+        fig_tendencia = generar_tendencia_anual(df, theme=plotly_theme)
+        st.plotly_chart(fig_tendencia, use_container_width=True)
+
+
+    # --- PESTAÑA FOCOS DE DECISIÓN (Conclusiones Visuales) ---
+    with tab3:
+        st.header("Recomendaciones Estratégicas Basadas en Hallazgos")
+        st.markdown("**Se trabajó** para que la estrategia de mitigación se enfoque en los puntos de mayor impacto: Geografía Crítica y Estacionalidad.")
+        
+        # Uso de kpis para obtener los focos
+        depto_critico = kpis.get('Departamento Mas Afecstado', 'N/A')
+        delito_critico = kpis.get('Delito Mas Frecuente', 'N/A')
+        
+        col_t3_1, col_t3_2 = st.columns(2)
+        
+        # Desglose Geográfico (Gráfico de barras horizontal)
+        with col_t3_1:
+            st.subheader(f"📍 1. Composición del Delito en: {depto_critico}")
+            st.markdown(f"**Recomendación:** Priorizar los **2-3 artículos** más largos en este gráfico para maximizar la reducción del delito en **{depto_critico}**.")
+            
+            if depto_critico != 'N/A':
+                fig_dist_depto = generar_distribucion_top_depto_bar(df, depto_critico, theme=plotly_theme)
+                st.plotly_chart(fig_dist_depto, use_container_width=True)
+            else:
+                st.warning("Datos insuficientes para desglose geográfico.")
+        
+        # Estacionalidad del Delito Principal
+        with col_t3_2:
+            st.subheader(f"⏱️ 2. Estacionalidad del Delito Principal: {delito_critico}")
+            st.markdown(f"**Recomendación:** Asignar recursos operativos 1-2 meses antes de los **picos de casos** observados en este gráfico de estacionalidad.")
+            
+            if delito_critico != 'N/A':
+                fig_dist_mensual = generar_distribucion_mensual(df, delito_critico, theme=plotly_theme)
+                st.plotly_chart(fig_dist_mensual, use_container_width=True)
+            else:
+                st.warning("Datos insuficientes para análisis de estacionalidad.")
+
+    # --- Pie de página profesional ---
+    st.markdown("---")
+    st.caption("Dashboard desarrollado para el **Proyecto Final de Análisis de Datos** | Diseño con Streamlit y Plotly.")
+
+
+if __name__ == '__main__':
+    main()
