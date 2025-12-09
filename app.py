@@ -1057,10 +1057,12 @@ def main():
             else:
                 st.warning("⚠️ **Datos insuficientes para análisis de estacionalidad.**")
 
+    
     # --- Pie de página profesional ---
     st.markdown("<hr>", unsafe_allow_html=True)
     
-    
+    st.markdown("""
+    <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
         <p style="color: #444444; font-size: 0.8rem; margin-top: 10px;">
         © 2024 Análisis de Delitos Ambientales. Todos los derechos reservados.
         </p>
