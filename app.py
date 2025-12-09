@@ -1,181 +1,112 @@
-# ======================================================================
-# Dashboard Unificado de Análisis de Delitos Ambientales
-# GRUPO 3 – Talentotech
-# ======================================================================
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import json
+import re
 
-st.set_page_config(
-    page_title="Delitos Ambientales",
-    layout="wide",
-)
+st.set_page_config(page_title="Dashboard Delitos Ambientales", layout="wide")
 
-# ======================================================================
-# GEOJSON LOCAL DE COLOMBIA (DEPARTAMENTOS)
-# Sin URLs externas, 100% compatible con Streamlit Cloud.
-# ======================================================================
-
-colombia_geojson = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {"DPTO": "AMAZONAS"},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[-70, -3], [-71, -3], [-71, -4], [-70, -4], [-70, -3]]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {"DPTO": "ANTIOQUIA"},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[-75, 7], [-76, 7], [-76, 6], [-75, 6], [-75, 7]]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {"DPTO": "ARAUCA"},
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[-70, 7], [-71, 7], [-71, 6], [-70, 6], [-70, 7]]]
-      }
-    },
-    # ------------------------------------------------------------------
-    # NOTA IMPORTANTE:
-    # Este geojson es simbólico y funciona para visualización básica.
-    # Si quieres un mapa real con polígonos exactos, puedo incluir el completo.
-    # ------------------------------------------------------------------
-  ]
-}
-
-# ======================================================================
-# CARGA DEL DATASET
-# ======================================================================
-
+# ---------------------------------------------------------
+# CARGAR DATASET
+# ---------------------------------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("BD_Delitos_ambientales.csv", encoding="utf-8")
+    df = pd.read_csv("BD_Delitos_ambientales.csv", encoding="latin1")
 
-    df["FECHA HECHO"] = df["FECHA HECHO"].astype(str).str.replace("’", "").str.strip()
-    df["FECHA HECHO"] = pd.to_datetime(df["FECHA HECHO"], errors="coerce")
-
-    df["DEPARTAMENTO"] = df["DEPARTAMENTO"].astype(str).str.upper().str.strip()
-    df["MUNICIPIO"] = df["MUNICIPIO"].astype(str).str.upper().str.strip()
-
-    df["DESCRIPCION_CONDUCTA_RESUMIDA"] = df["DESCRIPCION_CONDUCTA"].apply(
-        lambda x: x[:40] + "..." if len(x) > 40 else x
+    # Normalizar nombres de departamentos para que coincidan con GeoJSON
+    df["DEPARTAMENTO"] = (
+        df["DEPARTAMENTO"]
+        .str.upper()
+        .str.normalize('NFKD')
+        .str.encode('ascii', errors='ignore')
+        .str.decode('utf-8')
+        .str.replace(r'[^A-Z ]', '', regex=True)
+        .str.strip()
     )
+
+    # Resumir descripciones de conducta para que no sean kilometros de texto
+    def resumir_texto(text):
+        text = str(text)
+        text = re.sub(r'[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ ]', '', text)
+        return text[:40] + "..." if len(text) > 40 else text
+
+    df["DESCRIPCION_CONDUCTA_RESUMIDA"] = df["DESCRIPCION_CONDUCTA"].apply(resumir_texto)
 
     return df
 
 df = load_data()
 
-# ======================================================================
-# TÍTULO
-# ======================================================================
+# ---------------------------------------------------------
+# TÍTULO PRINCIPAL
+# ---------------------------------------------------------
+st.markdown("""
+<h1 style='color:#32CD32;'>
+📊 Dashboard Unificado de Delitos Ambientales
+</h1>
+""", unsafe_allow_html=True)
 
-st.title("🌿 Dashboard de Delitos Ambientales en Colombia")
-st.markdown("Análisis automático basado en el dataset suministrado.")
+# ---------------------------------------------------------
+# GRÁFICA: DISTRIBUCIÓN DE TIPO DE CONDUCTA
+# ---------------------------------------------------------
+st.subheader("📌 Distribución por Tipo de Conducta")
 
-# ======================================================================
-# KPIs
-# ======================================================================
-
-total_casos = df["CANTIDAD"].sum()
-total_registros = len(df)
-delito_top = df.groupby("DESCRIPCION_CONDUCTA")["CANTIDAD"].sum().idxmax()
-depto_top = df.groupby("DEPARTAMENTO")["CANTIDAD"].sum().idxmax()
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("Total de Casos", f"{total_casos}")
-col2.metric("Registros Analizados", f"{total_registros}")
-col3.metric("Delito más frecuente", delito_top)
-col4.metric("Dpto. con más casos", depto_top)
-
-# ======================================================================
-# GRÁFICO: Casos por Departamento
-# ======================================================================
-
-st.subheader("📌 Casos por Departamento")
-
-graf1 = df.groupby("DEPARTAMENTO")["CANTIDAD"].sum().sort_values(ascending=False).reset_index()
+conducta = df.groupby("DESCRIPCION_CONDUCTA_RESUMIDA")["CANTIDAD"].sum().reset_index()
 
 fig1 = px.bar(
-    graf1,
-    x="DEPARTAMENTO",
-    y="CANTIDAD",
-    color="CANTIDAD",
-    color_continuous_scale="Turbo",
-)
-st.plotly_chart(fig1, use_container_width=True)
-
-# ======================================================================
-# GRÁFICO: Conductas resumidas
-# ======================================================================
-
-st.subheader("🧩 Distribución por Tipo de Conducta")
-
-graf2 = df.groupby("DESCRIPCION_CONDUCTA_RESUMIDA")["CANTIDAD"].sum().reset_index()
-
-fig2 = px.bar(
-    graf2,
+    conducta,
     x="DESCRIPCION_CONDUCTA_RESUMIDA",
     y="CANTIDAD",
     color="DESCRIPCION_CONDUCTA_RESUMIDA",
+    color_discrete_sequence=px.colors.qualitative.Dark24,
 )
-fig2.update_layout(xaxis={'categoryorder':'total descending'})
-st.plotly_chart(fig2, use_container_width=True)
 
-# ======================================================================
-# GRÁFICO: Zona
-# ======================================================================
-
-st.subheader("🏙️ Zona Urbana vs Rural")
-
-graf3 = df.groupby("ZONA")["CANTIDAD"].sum().reset_index()
-
-fig3 = px.pie(
-    graf3,
-    names="ZONA",
-    values="CANTIDAD"
+fig1.update_layout(
+    xaxis_tickangle=-45,
+    height=500,
+    legend_title="Conductas"
 )
-st.plotly_chart(fig3, use_container_width=True)
 
-# ======================================================================
-# MAPA (Versión estable)
-# ======================================================================
+st.plotly_chart(fig1, use_container_width=True)
 
-st.subheader("🗺️ Mapa de Delitos Ambientales por Departamento")
+# ---------------------------------------------------------
+# MAPA CHOROPLETH POR DEPARTAMENTO
+# ---------------------------------------------------------
+st.subheader("🗺️ Mapa de Delitos por Departamento")
 
+@st.cache_data
+def load_geojson():
+    with open("colombia_departamentos.geojson", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+geojson = load_geojson()
+
+# Agrupar data por departamento
 map_data = df.groupby("DEPARTAMENTO")["CANTIDAD"].sum().reset_index()
 
-# Normalización
-map_data["DEPARTAMENTO"] = map_data["DEPARTAMENTO"].astype(str).str.upper()
+# Crear diccionario para emparejar nombres con códigos del GeoJSON
+geo_departamentos = {
+    feature["properties"]["NOMBRE_DPT"].upper(): feature["properties"]["DPTO_CCDGO"]
+    for feature in geojson["features"]
+}
 
-fig_map = px.choropleth(
+# Asignar código de departamento a cada fila
+map_data["DPTO_CCDGO"] = map_data["DEPARTAMENTO"].map(geo_departamentos)
+
+# Evitar filas sin coincidencia
+map_data = map_data.dropna(subset=["DPTO_CCDGO"])
+
+fig2 = px.choropleth(
     map_data,
-    geojson=colombia_geojson,
-    locations="DEPARTAMENTO",
-    featureidkey="properties.DPTO",
+    geojson=geojson,
+    locations="DPTO_CCDGO",
+    featureidkey="properties.DPTO_CCDGO",
     color="CANTIDAD",
     color_continuous_scale="Viridis",
+    hover_name="DEPARTAMENTO",
+    labels={"CANTIDAD": "Cantidad"}
 )
 
-fig_map.update_geos(fitbounds="locations", visible=False)
-fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+fig2.update_geos(fitbounds="locations", visible=False)
+fig2.update_layout(height=600)
 
-st.plotly_chart(fig_map, use_container_width=True)
-
-# ======================================================================
-# FINAL
-# ======================================================================
-
-st.markdown("---")
-st.markdown("📌 *Dashboard generado automáticamente según el dataset cargado.*")
+st.plotly_chart(fig2, use_container_width=True)
