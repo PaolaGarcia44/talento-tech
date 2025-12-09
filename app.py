@@ -1,112 +1,725 @@
+# app.py
+
+"""
+Dashboard Unificado de Análisis de Delitos Ambientales
+=====================================================
+GRUPO 3 de Talentotech.
+"""
+
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
-import json
-import re
+import plotly.graph_objects as go
+from typing import Dict, List, Any, Optional, Tuple
 
-st.set_page_config(page_title="Dashboard Delitos Ambientales", layout="wide")
+# ==============================================================================
+# CONFIGURACIÓN INICIAL Y ESTILO (SIN BARRA LATERAL)
+# ==============================================================================
 
-# ---------------------------------------------------------
-# CARGAR DATASET
-# ---------------------------------------------------------
+# Se establece la configuración de la página de Streamlit para el dashboard
+st.set_page_config(
+    page_title="🌎 Delitos Ambientales - Análisis Explorador", 
+    layout="wide",
+    # CAMBIO 1 CLAVE: Se cambia a "collapsed" para esconder la barra lateral por defecto
+    initial_sidebar_state="collapsed", 
+)
+
+# Diccionario de reemplazos 
+REEMPLAZOS_CARACTERES: Dict[str, str] = {
+    "Ã‘O": "NO", "Ã‘o": "NO", "Ã‘": "N", "Ã±": "N", "Ñ": "N", "ñ": "N",
+    "Ã¡": "A", "Ã©": "E", "Ã­": "I", "Ã³": "O", "Ãº": "U", "Á": "A", "É": "E",
+    "Í": "I", "Ó": "O", "Ú": "U", "ÃÁ": "A", "ÃÉ": "E", "ÃÍ": "I", "ÃÓ": "O", 
+    "ÃÚ": "U", "ÃA": "A", "ÃE": "E", "ÃI": "I", "ÃO": "O", "ÃU": "U", "á": "A", 
+    "é": "E", "í": "I", "ó": "O", "ú": "U", "Ã¼": "U", "Ãœ": "U", "Ü": "U", 
+    "ü": "U", "¿": "", "?": "", "¡": "", "!": "", "Â¿": "", "Â¡": "",
+    "ï¿½": "", "Â": "", "â€œ": "", "â€": "", "â€™": "", "â€¢": "", "â€“": "",
+    "â€”": "", "™": "", "®": "", "©": "", "º": "", "ª": "", "€": "", "$": "", 
+    "£": "", "¼": "", "½": "", "¾": "",
+}
+
+# --- ESTILO CSS ---
+st.markdown("""
+<style>
+/* Estilo para la imagen de fondo de toda la aplicación */
+.stApp {
+    background-image: url("https://i.pinimg.com/736x/39/c7/1e/39c71e43cd06601a698edc75859dd674.jpg"); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+}
+
+/* Capa de superposición para difuminar y oscurecer/atenuar la imagen */
+.stApp::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+    filter: blur(15px);
+    z-index: -1; 
+}
+
+/* AJUSTES GENERALES: TODO EL TEXTO OSCURO */
+h1 {color: #000000; font-weight: 800; border-bottom: 2px solid #333333; text-shadow: none; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;} 
+h2 {color: #333333; border-left: 5px solid #333333; padding-left: 10px; text-shadow: none;}
+h3 {color: #333333; text-shadow: none;}
+
+/* Texto normal, párrafos y listas */
+p, li, .stMarkdown {color: #333333 !important;} 
+/* Fondo claro para las cajas de información (st.info, st.success, etc.) */
+.stAlert {background-color: rgba(255, 255, 255, 0.9); color: #000000 !important; border-left: 5px solid #333333;} 
+
+
+/* ESTILO PARA LOS KPIS (Fondo Claro, Texto Oscuro) */
+.stMetric>div {
+    border: 1px solid #333333; 
+    padding: 15px; 
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo claro y opaco */
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5); 
+    color: #333333; /* Texto general oscuro */
+}
+.stMetric label {color: #333333;} /* Etiqueta oscura */
+.stMetric div[data-testid="stMetricValue"] {color: #000000;} /* Valor oscuro */
+.stMetric div[data-testid="stMetricDelta"] {color: #cc0000;} /* Delta en color contrastante */
+
+
+/* ESTILO PARA LA NAVEGACIÓN DE PESTAÑAS (Fondo Claro, Texto Oscuro) */
+.stTabs [data-baseweb="tab-list"] button {
+    background-color: rgba(255, 255, 255, 0.9); /* Fondo claro opaco */
+    color: #333333; /* Texto oscuro */
+    font-weight: bold;
+    border-radius: 5px 5px 0px 0px;
+    border: 1px solid #333333;
+    transition: all 0.2s ease-in-out;
+}
+.stTabs [data-baseweb="tab-list"] button:hover {
+    background-color: rgba(200, 200, 200, 0.9);
+    color: #000000;
+}
+.stTabs [data-baseweb="tab-list"] button:focus {
+    border-bottom: 3px solid #333333;
+    background-color: rgba(200, 200, 200, 0.95); 
+    color: #000000;
+}
+
+/* CAMBIO 2: ELIMINACIÓN DEL CSS ESPECÍFICO DE LA BARRA LATERAL 
+.css-1d391kg {} */
+
+
+/* AJUSTE DE COLOR DEL TEXTO EN GRÁFICOS PLOTLY */
+
+/* Títulos de ejes, Leyendas y Etiquetas en general */
+.modebar, .legendtext, .xaxislayer-title, .yaxislayer-title {
+    color: #000000 !important; 
+    fill: #000000 !important; /* Para asegurar el color en SVG/Plotly */
+}
+/* Forzar texto de los ticks de los ejes */
+.xtick, .ytick {
+    color: #000000 !important;
+    fill: #000000 !important;
+}
+/* Para asegurar los títulos principales de los gráficos */
+.gtitle {
+    fill: #000000 !important;
+}
+
+/* MEJORAS PARA GRÁFICOS MÁS LEGIBLES */
+.plotly-graph-div {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
+/* Forzar color negro en TODOS los encabezados */
+h1, h2, h3, h4, h5, h6 {
+    color: black !important;
+}
+
+/* También afecta a títulos creados dentro de st.markdown */
+.css-10trblm, .css-1v3fvcr {
+    color: black !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+
+# ==============================================================================
+# LAS FUNCIONES CLAVE DE PREPROCESAMIENTO Y LIMPIEZA DE DATOS
+# ==============================================================================
+
+def _corregir_caracteres(texto: Any) -> str:
+    # Esta pequeña función se hizo para corregir caracteres uno a uno.
+    if pd.isna(texto): return ""
+    texto = str(texto).strip()
+    for malo, bueno in REEMPLAZOS_CARACTERES.items(): texto = texto.replace(malo, bueno)
+    return texto
+
+def limpiar_texto(texto: Any, mayusculas: bool = True, espacios_a_guion: bool = False) -> str:
+    # Función general que se usó para estandarizar el formato de las celdas.
+    if pd.isna(texto): return ""
+    texto = str(texto).strip()
+    texto = _corregir_caracteres(texto)
+    texto = " ".join(texto.split())
+    if mayusculas: texto = texto.upper()
+    if espacios_a_guion: texto = texto.replace(" ", "_")
+    if texto in ["NAN", "NONE", "NULL", ""]: return ""
+    return texto
+
+def estandarizar_nombres_columnas(df: pd.DataFrame) -> pd.DataFrame:
+    # Aquí se hizo el trabajo de limpiar los nombres de las columnas para facilitar el manejo.
+    df_copy = df.copy()
+    columnas_nuevas: List[str] = []
+    for col in df_copy.columns:
+        col_limpia = limpiar_texto(col, mayusculas=True, espacios_a_guion=True)
+        columnas_nuevas.append(col_limpia)
+    df_copy.columns = columnas_nuevas
+    return df_copy
+
+def limpiar_columnas_texto(df: pd.DataFrame) -> pd.DataFrame:
+    # Esta parte se trabajó para asegurar la consistencia del texto en las celdas.
+    df_copy = df.copy()
+    columnas_texto = df_copy.select_dtypes(include=['object']).columns.tolist()
+
+    for col in columnas_texto:
+        usar_guion = col not in ['DEPARTAMENTO', 'MUNICIPIO']
+        df_copy[col] = df_copy[col].apply(
+            lambda x: limpiar_texto(x, mayusculas=True, espacios_a_guion=usar_guion)
+        )
+    return df_copy
+
+
 @st.cache_data
-def load_data():
-    df = pd.read_csv("BD_Delitos_ambientales.csv", encoding="latin1")
+def cargar_y_limpiar_datos(data_input: Any) -> pd.DataFrame:
+    """
+    Función donde se hizo la carga inicial del CSV, la limpieza de caracteres especiales 
+    y la estandarización de columnas.
+    """
+    if data_input is None: return pd.DataFrame()
+        
+    try:
+        df_delitos = pd.read_csv(data_input)
+    except FileNotFoundError:
+        return pd.DataFrame()
+    except Exception as e:
+        return pd.DataFrame()
 
-    # Normalizar nombres de departamentos para que coincidan con GeoJSON
-    df["DEPARTAMENTO"] = (
-        df["DEPARTAMENTO"]
-        .str.upper()
-        .str.normalize('NFKD')
-        .str.encode('ascii', errors='ignore')
-        .str.decode('utf-8')
-        .str.replace(r'[^A-Z ]', '', regex=True)
-        .str.strip()
-    )
+    df = estandarizar_nombres_columnas(df_delitos)
+    df = limpiar_columnas_texto(df)
+    
+    # Se extrajo el año de la fecha.
+    if 'FECHA_HECHO' in df.columns:
+        df['ANIO'] = pd.to_numeric(df['FECHA_HECHO'].astype(str).str[-4:], errors='coerce').fillna(0).astype(int)
+    else: df['ANIO'] = 0 
+        
+    # Se hizo la unificación de la columna de cantidad.
+    columnas_cantidad = [col for col in df.columns if 'CANTIDAD' in col]
+    if columnas_cantidad:
+        col_cantidad = columnas_cantidad[0]
+        if col_cantidad != 'CANTIDAD':
+            df = df.rename(columns={col_cantidad: 'CANTIDAD'})
+        df['CANTIDAD'] = pd.to_numeric(df['CANTIDAD'], errors='coerce').fillna(0).astype(int)
+    else: df['CANTIDAD'] = 1 
 
-    # Resumir descripciones de conducta para que no sean kilometros de texto
-    def resumir_texto(text):
-        text = str(text)
-        text = re.sub(r'[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ ]', '', text)
-        return text[:40] + "..." if len(text) > 40 else text
-
-    df["DESCRIPCION_CONDUCTA_RESUMIDA"] = df["DESCRIPCION_CONDUCTA"].apply(resumir_texto)
+    # Se eliminaron los duplicados encontrados en el set de datos.
+    if df.duplicated().sum() > 0:
+        df = df.drop_duplicates().reset_index(drop=True)
+        
+    df = df.fillna("")
+    
+    # Se hizo la extracción del artículo de delito para una mejor categorización.
+    if 'DESCRIPCION_CONDUCTA' in df.columns:
+        df['ARTICULO'] = df['DESCRIPCION_CONDUCTA'].astype(str).str.split('.').str[0]
+        df['ARTICULO'] = df['ARTICULO'].apply(lambda x: limpiar_texto(x, espacios_a_guion=False))
 
     return df
 
-df = load_data()
+def generar_kpis_y_analisis(df: pd.DataFrame) -> Dict[str, Any]:
+    """
+    Calculamos los KPIs clave para tener un Resumen Ejecutivo rápido de los hallazgos.
+    Se hizo un cálculo para la tendencia histórica.
+    """
+    if df.empty: return {}
 
-# ---------------------------------------------------------
-# TÍTULO PRINCIPAL
-# ---------------------------------------------------------
-st.markdown("""
-<h1 style='color:#32CD32;'>
-📊 Dashboard Unificado de Delitos Ambientales
-</h1>
-""", unsafe_allow_html=True)
+    kpis = {}
+    kpis["Total Casos"] = df['CANTIDAD'].sum()
+    
+    min_anio = df['ANIO'].min() if df['ANIO'].min() > 0 else None
+    max_anio = df['ANIO'].max() if df['ANIO'].max() > 0 else None
+    kpis["Rango Años"] = f"{min_anio} - {max_anio}" if min_anio and max_anio else "N/A"
+    
+    if 'ARTICULO' in df.columns and len(df['ARTICULO'].unique()) > 1:
+        kpis["Delito Mas Frecuente"] = df.groupby('ARTICULO')['CANTIDAD'].sum().idxmax()
+        
+    if 'DEPARTAMENTO' in df.columns and len(df['DEPARTAMENTO'].unique()) > 1:
+        kpis["Departamento Mas Afecstado"] = df.groupby('DEPARTAMENTO')['CANTIDAD'].sum().idxmax()
+        
+    kpis["Tendencia Diff"] = 0
+    kpis["Tendencia General"] = "N/A"
+    # Se hizo la lógica para calcular la variación entre el año inicial y final
+    if min_anio and max_anio and min_anio != max_anio:
+        casos_inicial = df[df['ANIO'] == min_anio]['CANTIDAD'].sum()
+        casos_final = df[df['ANIO'] == max_anio]['CANTIDAD'].sum()
+        
+        if casos_inicial > 0 and casos_final > 0:
+            crecimiento_porcentual = ((casos_final - casos_inicial) / casos_inicial) * 100
+            kpis["Tendencia Diff"] = crecimiento_porcentual
+            if crecimiento_porcentual > 5: kpis["Tendencia General"] = "crecimiento"
+            elif crecimiento_porcentual < -5: kpis["Tendencia General"] = "disminución"
+            else: kpis["Tendencia General"] = "estable"
+        elif casos_final > 0 and casos_inicial == 0: kpis["Tendencia General"] = "crecimiento explosivo"
+        else: kpis["Tendencia General"] = "datos insuficientes"
+        
+    return kpis
 
-# ---------------------------------------------------------
-# GRÁFICA: DISTRIBUCIÓN DE TIPO DE CONDUCTA
-# ---------------------------------------------------------
-st.subheader("📌 Distribución por Tipo de Conducta")
+# ==============================================================================
+# FUNCIONES DE VISUALIZACIÓN (MEJORADAS)
+# ==============================================================================
 
-conducta = df.groupby("DESCRIPCION_CONDUCTA_RESUMIDA")["CANTIDAD"].sum().reset_index()
+def generar_tendencia_anual(df: pd.DataFrame, theme: Optional[str] = None) -> go.Figure:
+    """Se hizo este gráfico de barras para visualizar la tendencia histórica por intervalos de año."""
+    if df.empty or 'ANIO' not in df.columns: return go.Figure()
+    max_anio = df['ANIO'].max() if not df.empty else 2025
+    bins = [2000, 2005, 2010, 2015, 2020, max_anio + 1]
+    labels = [f"{bins[i]}-{bins[i+1]-1}" for i in range(len(bins)-1)]
+    df_tendencia = df[(df['ANIO'] >= 2000) & (df['ANIO'] <= max_anio)].copy()
+    df_tendencia['INTERVALO_ANIO'] = pd.cut(df_tendencia['ANIO'], bins=bins, labels=labels, right=False)
+    df_tendencia_intervalos = (df_tendencia.groupby('INTERVALO_ANIO', observed=False)['CANTIDAD'].sum().reset_index())
 
-fig1 = px.bar(
-    conducta,
-    x="DESCRIPCION_CONDUCTA_RESUMIDA",
-    y="CANTIDAD",
-    color="DESCRIPCION_CONDUCTA_RESUMIDA",
-    color_discrete_sequence=px.colors.qualitative.Dark24,
-)
+    fig = px.bar(
+        df_tendencia_intervalos, 
+        x='INTERVALO_ANIO', 
+        y='CANTIDAD', 
+        color='CANTIDAD',
+        color_continuous_scale=px.colors.sequential.Tealgrn,  # Mejor escala de color
+        text_auto=True,  # Cambiado para mejor visualización
+        template=theme
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        texttemplate='%{value:,.0f}', 
+        textposition='outside',
+        marker_line_color='rgb(8,48,107)',
+        marker_line_width=1.5,
+        opacity=0.9
+    )
+    
+    fig.update_layout(
+        title_text="<b>Tendencia de Casos por Intervalos de Año</b>", 
+        xaxis_title="Intervalo de Años", 
+        yaxis_title="Número de Casos", 
+        margin=dict(t=50, b=50, l=50, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=16, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        )
+    )
+    return fig
 
-fig1.update_layout(
-    xaxis_tickangle=-45,
-    height=500,
-    legend_title="Conductas"
-)
 
-st.plotly_chart(fig1, use_container_width=True)
+def generar_top_conductas(df: pd.DataFrame, n_top: int = 8, theme: Optional[str] = None) -> go.Figure:
+    """Se hizo este gráfico de barras horizontales para identificar el Top N de Artículos de delito (Visión General)."""
+    if df.empty or 'ARTICULO' not in df.columns: return go.Figure()
+    df_conducta_top = (df.groupby('ARTICULO')['CANTIDAD'].sum().nlargest(n_top).reset_index())
 
-# ---------------------------------------------------------
-# MAPA CHOROPLETH POR DEPARTAMENTO
-# ---------------------------------------------------------
-st.subheader("🗺️ Mapa de Delitos por Departamento")
+    fig = px.bar(
+        df_conducta_top, 
+        x='CANTIDAD', 
+        y='ARTICULO', 
+        orientation='h', 
+        color='CANTIDAD',
+        color_continuous_scale=px.colors.sequential.Plasma_r,  # Invertido para mejor visualización
+        text_auto=True,  # Mejor visualización de valores
+        template=theme
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        texttemplate='%{value:,.0f}',
+        textposition='outside',
+        marker_line_color='rgb(8,48,107)',
+        marker_line_width=1.5,
+        opacity=0.9
+    )
+    
+    fig.update_layout(
+        title_text=f"<b>Top {n_top} Artículos de Conductas Delictivas Ambientales</b>", 
+        xaxis_title="Número de Casos", 
+        yaxis_title="Artículo de Delito", 
+        yaxis={'autorange': "reversed", 'categoryorder': 'total ascending'}, 
+        margin=dict(t=50, b=50, l=150, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=16, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            title_font=dict(size=14),
+            tickfont=dict(size=11)
+        )
+    )
+    return fig
 
-@st.cache_data
-def load_geojson():
-    with open("colombia_departamentos.geojson", "r", encoding="utf-8") as f:
-        return json.load(f)
 
-geojson = load_geojson()
+def generar_top_departamentos(df: pd.DataFrame, n_top: int = 10, theme: Optional[str] = None) -> go.Figure:
+    """Este gráfico se hizo para mostrar el Top N de departamentos más afectados, el foco geográfico."""
+    if df.empty or 'DEPARTAMENTO' not in df.columns: return go.Figure()
+    df_depto_top = (df.groupby('DEPARTAMENTO')['CANTIDAD'].sum().nlargest(n_top).reset_index())
 
-# Agrupar data por departamento
-map_data = df.groupby("DEPARTAMENTO")["CANTIDAD"].sum().reset_index()
+    fig = px.bar(
+        df_depto_top, 
+        x='DEPARTAMENTO', 
+        y='CANTIDAD', 
+        color='CANTIDAD',
+        color_continuous_scale=px.colors.sequential.Oranges,
+        text_auto=True,  # Mejor visualización
+        template=theme
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        texttemplate='%{value:,.0f}',
+        textposition='outside',
+        marker_line_color='rgb(140,81,10)',
+        marker_line_width=1.5,
+        opacity=0.9
+    )
+    
+    fig.update_layout(
+        title_text=f"<b>Top {n_top} Departamentos más Afectados</b>", 
+        xaxis_title="Departamento", 
+        yaxis_title="Número de Casos", 
+        xaxis_tickangle=-45, 
+        margin=dict(t=50, b=100, l=50, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=16, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        )
+    )
+    return fig
 
-# Crear diccionario para emparejar nombres con códigos del GeoJSON
-geo_departamentos = {
-    feature["properties"]["NOMBRE_DPT"].upper(): feature["properties"]["DPTO_CCDGO"]
-    for feature in geojson["features"]
-}
 
-# Asignar código de departamento a cada fila
-map_data["DPTO_CCDGO"] = map_data["DEPARTAMENTO"].map(geo_departamentos)
+def generar_heatmap_conducta_anual(df: pd.DataFrame, theme: Optional[str] = None) -> go.Figure:
+    """Se hizo un Mapa de calor para mostrar la evolución de los delitos por año (usando Escala Log para suavizar)."""
+    if df.empty or 'ARTICULO' not in df.columns or 'ANIO' not in df.columns: return go.Figure()
+    df_heatmap_data = (df.groupby(['ANIO', 'ARTICULO'])['CANTIDAD'].sum().reset_index())
+    df_heatmap_pivot = df_heatmap_data.pivot_table(index='ARTICULO', columns='ANIO', values='CANTIDAD', fill_value=0)
+    df_heatmap_log = np.log1p(df_heatmap_pivot)
 
-# Evitar filas sin coincidencia
-map_data = map_data.dropna(subset=["DPTO_CCDGO"])
+    fig = px.imshow(
+        df_heatmap_log, 
+        x=df_heatmap_log.columns.astype(str), 
+        y=df_heatmap_log.index,
+        color_continuous_scale='YlOrRd',
+        aspect="auto", 
+        template=theme,
+        text_auto=False,
+        labels=dict(color="Log(1 + Casos)")
+    )
 
-fig2 = px.choropleth(
-    map_data,
-    geojson=geojson,
-    locations="DPTO_CCDGO",
-    featureidkey="properties.DPTO_CCDGO",
-    color="CANTIDAD",
-    color_continuous_scale="Viridis",
-    hover_name="DEPARTAMENTO",
-    labels={"CANTIDAD": "Cantidad"}
-)
+    # Mejoras en la visualización
+    fig.update_layout(
+        title_text="<b>Mapa de Calor: Evolución Temporal por Tipo de Delito (Log)</b>", 
+        xaxis_title="Año", 
+        yaxis_title="Artículo de Delito", 
+        xaxis_tickangle=-45, 
+        height=650, 
+        margin=dict(t=50, b=50, l=150, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=16, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14),
+            tickfont=dict(size=10)
+        ),
+        yaxis=dict(
+            title_font=dict(size=14),
+            tickfont=dict(size=9)
+        )
+    )
+    fig.update_coloraxes(
+        colorbar_title='Log(1 + Casos)',
+        colorbar_title_font=dict(size=12),
+        colorbar_tickfont=dict(size=10)
+    )
+    
+    # Agregar anotaciones para valores altos
+    if len(df_heatmap_pivot.columns) * len(df_heatmap_pivot.index) <= 50:  # Solo si no hay demasiadas celdas
+        for i, articulo in enumerate(df_heatmap_pivot.index):
+            for j, anio in enumerate(df_heatmap_pivot.columns):
+                valor = df_heatmap_pivot.iloc[i, j]
+                if valor > 0:  # Solo mostrar valores positivos
+                    fig.add_annotation(
+                        x=str(anio),
+                        y=articulo,
+                        text=str(int(valor)),
+                        showarrow=False,
+                        font=dict(size=8, color='white' if df_heatmap_log.iloc[i, j] > df_heatmap_log.values.mean() else 'black')
+                    )
+    
+    return fig
 
-fig2.update_geos(fitbounds="locations", visible=False)
-fig2.update_layout(height=600)
 
-st.plotly_chart(fig2, use_container_width=True)
+def generar_evolucion_top5_conductas(df: pd.DataFrame, theme: Optional[str] = None) -> go.Figure:
+    """Se hizo este gráfico de líneas para rastrear la evolución anual de las 5 conductas más frecuentes."""
+    if df.empty or 'ARTICULO' not in df.columns or 'ANIO' not in df.columns: return go.Figure()
+
+    top5_articulos = df.groupby('ARTICULO')['CANTIDAD'].sum().nlargest(5).index.tolist()
+    df_top5_filtrado = df[df['ARTICULO'].isin(top5_articulos)].copy()
+    df_tendencia = (df_top5_filtrado.groupby(['ANIO', 'ARTICULO'])['CANTIDAD'].sum().reset_index())
+    
+    fig = px.line(
+        df_tendencia, 
+        x='ANIO', 
+        y='CANTIDAD', 
+        color='ARTICULO', 
+        markers=True, 
+        line_shape='spline', 
+        template=theme,
+        line_dash_sequence=['solid', 'dash', 'dot', 'dashdot', 'longdash'],
+        symbol_sequence=['circle', 'square', 'diamond', 'cross', 'x']
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        mode='lines+markers',
+        marker=dict(size=8),
+        line=dict(width=3)
+    )
+    
+    fig.update_layout(
+        title="<b>Evolución Anual de las 5 Conductas más Frecuentes</b>",
+        xaxis_title="Año", 
+        yaxis_title="Cantidad de Casos", 
+        legend_title="Artículo", 
+        hovermode="x unified",
+        font=dict(color="#333333"),
+        hoverlabel=dict(
+            bgcolor="white", 
+            font_color="black",
+            font_size=12
+        ), 
+        margin=dict(t=50, b=50, l=50, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        title_font=dict(size=16, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14),
+            tickformat="d"
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11)
+        )
+    )
+    
+    # Agregar área sombreada para mejor visualización
+    for trace in fig.data:
+        fig.add_trace(go.Scatter(
+            x=trace.x,
+            y=trace.y,
+            mode='lines',
+            line=dict(width=0),
+            showlegend=False,
+            hoverinfo='skip',
+            fill='toself',
+            fillcolor=trace.line.color.replace('rgb', 'rgba').replace(')', ', 0.1)')
+        ))
+    
+    return fig
+
+
+def generar_distribucion_top_depto_bar(df: pd.DataFrame, depto_critico: str, theme: Optional[str] = None) -> go.Figure:
+    """Generamos un gráfico de barras horizontal de la distribución de delitos en el departamento más afectado."""
+    if df.empty or 'DEPARTAMENTO' not in df.columns or depto_critico == "N/A": return go.Figure()
+    
+    df_filtrado = df[df['DEPARTAMENTO'] == depto_critico].copy()
+    df_distribucion = df_filtrado.groupby('ARTICULO')['CANTIDAD'].sum().nlargest(5).reset_index()
+    
+    fig = px.bar(
+        df_distribucion, 
+        x='CANTIDAD', 
+        y='ARTICULO', 
+        orientation='h',
+        title=f'Composición del Delito en el Foco Geográfico: **{depto_critico}**',
+        template=theme,
+        color='CANTIDAD',
+        color_continuous_scale=px.colors.sequential.Reds,
+        text_auto=True
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        texttemplate='%{value:,.0f}',
+        textposition='outside',
+        marker_line_color='rgb(103,0,13)',
+        marker_line_width=1.5,
+        opacity=0.9
+    )
+    
+    fig.update_layout(
+        yaxis={'autorange': "reversed", 'categoryorder': 'total ascending'}, 
+        yaxis_title="Artículo de Delito", 
+        xaxis_title="Número de Casos", 
+        margin=dict(t=50, b=50, l=150, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=15, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        ),
+        yaxis=dict(
+            title_font=dict(size=14),
+            tickfont=dict(size=11)
+        )
+    )
+    return fig
+
+
+def generar_distribucion_mensual(df: pd.DataFrame, delito_critico: str, theme: Optional[str] = None) -> go.Figure:
+    """Generamos un gráfico de barras para la distribución mensual del delito más frecuente (Estacionalidad)."""
+    if df.empty or 'FECHA_HECHO' not in df.columns or delito_critico == "N/A": return go.Figure()
+    
+    df_filtrado = df[df['ARTICULO'] == delito_critico].copy()
+    
+    try:
+        # Se hizo la conversión segura a datetime
+        df_filtrado['FECHA_DT'] = pd.to_datetime(df_filtrado['FECHA_HECHO'], errors='coerce')
+        df_filtrado = df_filtrado.dropna(subset=['FECHA_DT'])
+    except Exception: return go.Figure()
+        
+    df_filtrado['MES'] = df_filtrado['FECHA_DT'].dt.month
+    df_mensual = (df_filtrado.groupby('MES')['CANTIDAD'].sum().reset_index())
+    
+    meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    df_mensual['NOMBRE_MES'] = df_mensual['MES'].apply(lambda x: meses[x-1])
+    
+    fig = px.bar(
+        df_mensual, 
+        x='NOMBRE_MES', 
+        y='CANTIDAD', 
+        title=f'Estacionalidad Mensual del Delito Prioritario: **{delito_critico}**',
+        template=theme,
+        color='CANTIDAD',
+        color_continuous_scale=px.colors.sequential.Viridis,
+        text_auto=True,
+        category_orders={"NOMBRE_MES": meses}
+    )
+    
+    # Mejoras en la visualización
+    fig.update_traces(
+        texttemplate='%{value:,.0f}',
+        textposition='outside',
+        marker_line_color='rgb(68,1,84)',
+        marker_line_width=1.5,
+        opacity=0.9
+    )
+    
+    fig.update_layout(
+        xaxis_title="Mes", 
+        yaxis_title="Casos Acumulados", 
+        margin=dict(t=50, b=50, l=50, r=50),
+        plot_bgcolor='rgba(255,255,255,0.9)',
+        paper_bgcolor='rgba(255,255,255,0.9)',
+        font=dict(size=12, color='#333333'),
+        title_font=dict(size=15, color='#000000'),
+        xaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14),
+            tickangle=0
+        ),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor='rgba(200,200,200,0.3)',
+            title_font=dict(size=14)
+        )
+    )
+    return fig
+
+
+# ==============================================================================
+# APLICACIÓN PRINCIPAL DE STREAMLIT (Montaje Final)
+# ==============================================================================
+
+def main():
+    """Se hizo el montaje del layout minimalista y estructurado usando pestañas (st.tabs)."""
+    
+    # --- 1. INICIALIZACIÓN DE VARIABLES CRÍTICAS ---
+    df = pd.DataFrame()
+    plotly_theme = None
+    data_input = None
+
+    
+    st.title("🌎 Dashboard-Delitos Ambientales")
+    st.markdown("Análisis Exploratorio de Tendencias y Focos Críticos.")
+    
+    # --- SECCIÓN: INTEGRANTES DEL GRUPO (Ajuste solicitado) ---
+    st.info("""
+    ✨ **GRUPO 3 Talento_tech.**
+    
+    **Integrantes del Equipo:**
+    * Edwin hernan velez urrego
+    * Paola andrea garcia tangarife
+    * yeraldin campo espinal
+    * valentina restrepo angel
+    * sara melisa londoño
+    
+    """)
+    st.markdown("---")
+    
+    
+    # 🔗 CONFIGURACIÓN Y CARGA
