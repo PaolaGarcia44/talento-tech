@@ -33,127 +33,261 @@ REEMPLAZOS_CARACTERES: Dict[str, str] = {
     "ÃÚ": "U", "ÃA": "A", "ÃE": "E", "ÃI": "I", "ÃO": "O", "ÃU": "U", "á": "A", 
     "é": "E", "í": "I", "ó": "O", "ú": "U", "Ã¼": "U", "Ãœ": "U", "Ü": "U", 
     "ü": "U", "¿": "", "?": "", "¡": "", "!": "", "Â¿": "", "Â¡": "",
-    "ï¿½": "", "Â": "", "â€œ": "", "â€": "", "â€™": "", "â€¢": "", "â€“": "",
-    "â€”": "", "™": "", "®": "", "©": "", "º": "", "ª": "", "€": "", "$": "", 
+    "ï¿½": "", "Â": "", "â€œ": "", "â€": "", "â€™": "", "â€¢": "", "â€": "",
+    "â€"": "", "™": "", "®": "", "©": "", "º": "", "ª": "", "€": "", "$": "", 
     "£": "", "¼": "", "½": "", "¾": "",
 }
 
-# --- ESTILO CSS ---
+# --- ESTILO CSS CON FONDO NEGRO PROFESIONAL ---
 st.markdown("""
 <style>
-/* Estilo para la imagen de fondo de toda la aplicación */
+/* FONDO NEGRO PROFESIONAL */
 .stApp {
-    background-image: url("https://i.pinimg.com/736x/39/c7/1e/39c71e43cd06601a698edc75859dd674.jpg"); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; 
+    background-color: #0a0a0a !important;
+    background-image: none !important;
+    color: #ffffff;
 }
 
-/* Capa de superposición para difuminar y oscurecer/atenuar la imagen */
+/* ELIMINAR CAPA DE SUPERPOSICIÓN ANTERIOR */
 .stApp::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
-    filter: blur(15px);
-    z-index: -1; 
+    content: none;
 }
 
-/* AJUSTES GENERALES: TODO EL TEXTO OSCURO */
-h1 {color: #000000; font-weight: 800; border-bottom: 2px solid #333333; text-shadow: none; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;} 
-h2 {color: #333333; border-left: 5px solid #333333; padding-left: 10px; text-shadow: none;}
-h3 {color: #333333; text-shadow: none;}
+/* AJUSTES GENERALES: TODO EL TEXTO CLARO */
+h1 {
+    color: #ffffff !important; 
+    font-weight: 800; 
+    border-bottom: 3px solid #00d4ff;
+    text-shadow: 0 2px 4px rgba(0, 212, 255, 0.3);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(10, 10, 10, 0.9));
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 5px solid #00d4ff;
+} 
+
+h2 {
+    color: #ffffff !important;
+    border-left: 4px solid #00ff88;
+    padding-left: 12px;
+    background: rgba(20, 20, 20, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+h3 {
+    color: #ffffff !important;
+    border-left: 3px solid #ff6b00;
+    padding-left: 10px;
+    background: rgba(30, 30, 30, 0.6);
+    padding: 8px;
+    border-radius: 4px;
+}
 
 /* Texto normal, párrafos y listas */
-p, li, .stMarkdown {color: #333333 !important;} 
-/* Fondo claro para las cajas de información (st.info, st.success, etc.) */
-.stAlert {background-color: rgba(255, 255, 255, 0.9); color: #000000 !important; border-left: 5px solid #333333;} 
+p, li, .stMarkdown, .stText {
+    color: #e0e0e0 !important;
+} 
 
-
-/* ESTILO PARA LOS KPIS (Fondo Claro, Texto Oscuro) */
-.stMetric>div {
-    border: 1px solid #333333; 
-    padding: 15px; 
+/* Fondo para las cajas de información */
+.stAlert {
+    background: rgba(25, 25, 35, 0.9) !important;
+    color: #ffffff !important;
+    border-left: 5px solid #00d4ff !important;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo claro y opaco */
-    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.5); 
-    color: #333333; /* Texto general oscuro */
-}
-.stMetric label {color: #333333;} /* Etiqueta oscura */
-.stMetric div[data-testid="stMetricValue"] {color: #000000;} /* Valor oscuro */
-.stMetric div[data-testid="stMetricDelta"] {color: #cc0000;} /* Delta en color contrastante */
-
-
-/* ESTILO PARA LA NAVEGACIÓN DE PESTAÑAS (Fondo Claro, Texto Oscuro) */
-.stTabs [data-baseweb="tab-list"] button {
-    background-color: rgba(255, 255, 255, 0.9); /* Fondo claro opaco */
-    color: #333333; /* Texto oscuro */
-    font-weight: bold;
-    border-radius: 5px 5px 0px 0px;
-    border: 1px solid #333333;
-    transition: all 0.2s ease-in-out;
-}
-.stTabs [data-baseweb="tab-list"] button:hover {
-    background-color: rgba(200, 200, 200, 0.9);
-    color: #000000;
-}
-.stTabs [data-baseweb="tab-list"] button:focus {
-    border-bottom: 3px solid #333333;
-    background-color: rgba(200, 200, 200, 0.95); 
-    color: #000000;
+    border: 1px solid rgba(0, 212, 255, 0.3);
 }
 
-/* CAMBIO 2: ELIMINACIÓN DEL CSS ESPECÍFICO DE LA BARRA LATERAL 
-.css-1d391kg {} */
-
-
-/* AJUSTE DE COLOR DEL TEXTO EN GRÁFICOS PLOTLY */
-
-/* Títulos de ejes, Leyendas y Etiquetas en general */
-.modebar, .legendtext, .xaxislayer-title, .yaxislayer-title {
-    color: #000000 !important; 
-    fill: #000000 !important; /* Para asegurar el color en SVG/Plotly */
-}
-/* Forzar texto de los ticks de los ejes */
-.xtick, .ytick {
-    color: #000000 !important;
-    fill: #000000 !important;
-}
-/* Para asegurar los títulos principales de los gráficos */
-.gtitle {
-    fill: #000000 !important;
+.stSuccess {
+    background: rgba(25, 35, 25, 0.9) !important;
+    border-left: 5px solid #00ff88 !important;
 }
 
-/* MEJORAS PARA GRÁFICOS MÁS LEGIBLES */
-.plotly-graph-div {
+.stWarning {
+    background: rgba(35, 25, 25, 0.9) !important;
+    border-left: 5px solid #ff6b00 !important;
+}
+
+.stError {
+    background: rgba(35, 25, 25, 0.9) !important;
+    border-left: 5px solid #ff4444 !important;
+}
+
+/* ESTILO PARA LOS KPIS (Fondo Oscuro, Texto Claro) */
+.stMetric>div {
+    border: 1px solid rgba(0, 212, 255, 0.4) !important;
+    padding: 20px !important;
+    border-radius: 10px !important;
+    background: linear-gradient(145deg, rgba(20, 25, 35, 0.95), rgba(15, 20, 30, 0.95)) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    color: #ffffff !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stMetric>div:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2) !important;
+    border-color: rgba(0, 212, 255, 0.7) !important;
+}
+
+.stMetric label {
+    color: #00d4ff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.stMetric div[data-testid="stMetricValue"] {
+    color: #ffffff !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.stMetric div[data-testid="stMetricDelta"] {
+    color: #00ff88 !important;
+    font-weight: 600 !important;
+}
+
+/* ESTILO PARA LA NAVEGACIÓN DE PESTAÑAS (Fondo Oscuro) */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 5px;
+    padding: 5px;
+    background: rgba(20, 20, 30, 0.8);
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 10px;
+}
+
+.stTabs [data-baseweb="tab-list"] button {
+    background: rgba(30, 30, 40, 0.8) !important;
+    color: #b0b0b0 !important;
+    font-weight: 600;
+    border-radius: 8px !important;
+    border: 1px solid rgba(100, 100, 150, 0.3) !important;
+    transition: all 0.3s ease-in-out;
+    padding: 10px 20px;
+    margin: 0 2px;
+}
+
+.stTabs [data-baseweb="tab-list"] button:hover {
+    background: rgba(40, 40, 60, 0.9) !important;
+    color: #ffffff !important;
+    border-color: rgba(0, 212, 255, 0.5) !important;
+    transform: translateY(-2px);
+}
+
+.stTabs [data-baseweb="tab-list"] button[aria-selected="true"] {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 150, 255, 0.2)) !important;
+    color: #00d4ff !important;
+    border: 1px solid rgba(0, 212, 255, 0.7) !important;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+/* ESTILO PARA EXPANDERS */
+.streamlit-expanderHeader {
+    background: rgba(25, 25, 35, 0.9) !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+    font-weight: 600;
+}
+
+.streamlit-expanderContent {
+    background: rgba(20, 20, 30, 0.8) !important;
+    border-radius: 0 0 8px 8px !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    border-top: none !important;
+}
+
+/* ESTILO PARA TABLAS */
+.stDataFrame {
+    background: rgba(20, 20, 30, 0.9) !important;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+}
+
+/* ESTILO PARA SELECTBOX Y CONTROLES */
+.stSelectbox, .stFileUploader {
+    background: rgba(25, 25, 35, 0.9) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+}
+
+/* ESTILO PARA GRÁFICOS PLOTLY */
+.plotly-graph-div {
+    background: rgba(15, 15, 25, 0.95) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 212, 255, 0.2) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    padding: 15px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.plotly-graph-div:hover {
+    box-shadow: 0 12px 40px rgba(0, 212, 255, 0.1) !important;
+    border-color: rgba(0, 212, 255, 0.4) !important;
+}
+
+/* ESTILO PARA SEPARADORES */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+    margin: 30px 0;
+}
+
+/* ESTILO PARA FOOTER */
+.stCaption {
+    color: #888888 !important;
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 30px;
+}
+
+/* ESTILO PARA BOTONES */
+.stButton button {
+    background: linear-gradient(135deg, #0066cc, #00d4ff) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton button:hover {
+    background: linear-gradient(135deg, #0052a3, #00b8e6) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.3) !important;
+}
+
+/* ESTILO PARA SPINNER */
+.stSpinner > div {
+    border-color: #00d4ff transparent transparent transparent !important;
+}
+
+/* AJUSTES DE SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+    background: rgba(20, 20, 30, 0.8);
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 30, 40, 0.6);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00d4ff, #0066cc);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00e4ff, #0077dd);
 }
 
 </style>
 """, unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-/* Forzar color negro en TODOS los encabezados */
-h1, h2, h3, h4, h5, h6 {
-    color: black !important;
-}
-
-/* También afecta a títulos creados dentro de st.markdown */
-.css-10trblm, .css-1v3fvcr {
-    color: black !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
 
 # ==============================================================================
 # LAS FUNCIONES CLAVE DE PREPROCESAMIENTO Y LIMPIEZA DE DATOS
@@ -284,7 +418,7 @@ def generar_kpis_y_analisis(df: pd.DataFrame) -> Dict[str, Any]:
     return kpis
 
 # ==============================================================================
-# FUNCIONES DE VISUALIZACIÓN (MEJORADAS)
+# FUNCIONES DE VISUALIZACIÓN (MEJORADAS PARA FONDO NEGRO)
 # ==============================================================================
 
 def generar_tendencia_anual(df: pd.DataFrame, theme: Optional[str] = None) -> go.Figure:
@@ -302,38 +436,41 @@ def generar_tendencia_anual(df: pd.DataFrame, theme: Optional[str] = None) -> go
         x='INTERVALO_ANIO', 
         y='CANTIDAD', 
         color='CANTIDAD',
-        color_continuous_scale=px.colors.sequential.Tealgrn,  # Mejor escala de color
-        text_auto=True,  # Cambiado para mejor visualización
-        template=theme
+        color_continuous_scale='Viridis',  # Escala que funciona bien en fondo oscuro
+        text_auto=True,
+        template='plotly_dark'  # Tema oscuro para Plotly
     )
     
-    # Mejoras en la visualización
+    # Mejoras en la visualización para fondo negro
     fig.update_traces(
         texttemplate='%{value:,.0f}', 
         textposition='outside',
-        marker_line_color='rgb(8,48,107)',
-        marker_line_width=1.5,
+        textfont=dict(color='#ffffff', size=12),
+        marker_line_color='rgba(255, 255, 255, 0.3)',
+        marker_line_width=1,
         opacity=0.9
     )
     
     fig.update_layout(
-        title_text="<b>Tendencia de Casos por Intervalos de Año</b>", 
+        title_text="<b>📈 Tendencia de Casos por Intervalos de Año</b>", 
+        title_font=dict(size=18, color='#ffffff'),
         xaxis_title="Intervalo de Años", 
         yaxis_title="Número de Casos", 
-        margin=dict(t=50, b=50, l=50, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=16, color='#000000'),
+        margin=dict(t=60, b=50, l=50, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         )
     )
     return fig
@@ -350,38 +487,39 @@ def generar_top_conductas(df: pd.DataFrame, n_top: int = 8, theme: Optional[str]
         y='ARTICULO', 
         orientation='h', 
         color='CANTIDAD',
-        color_continuous_scale=px.colors.sequential.Plasma_r,  # Invertido para mejor visualización
-        text_auto=True,  # Mejor visualización de valores
-        template=theme
+        color_continuous_scale='Plasma',  # Escala vibrante para fondo oscuro
+        text_auto=True,
+        template='plotly_dark'
     )
     
     # Mejoras en la visualización
     fig.update_traces(
         texttemplate='%{value:,.0f}',
         textposition='outside',
-        marker_line_color='rgb(8,48,107)',
-        marker_line_width=1.5,
+        textfont=dict(color='#ffffff', size=11),
+        marker_line_color='rgba(255, 255, 255, 0.3)',
+        marker_line_width=1,
         opacity=0.9
     )
     
-    # CORRECCIÓN: Se eliminó el yaxis duplicado
     fig.update_layout(
-        title_text=f"<b>Top {n_top} Artículos de Conductas Delictivas Ambientales</b>", 
+        title_text=f"<b>🔥 Top {n_top} Artículos de Conductas Delictivas Ambientales</b>", 
+        title_font=dict(size=18, color='#ffffff'),
         xaxis_title="Número de Casos", 
         yaxis_title="Artículo de Delito", 
-        margin=dict(t=50, b=50, l=150, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=16, color='#000000'),
+        margin=dict(t=60, b=50, l=200, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         ),
         yaxis=dict(
-            title_font=dict(size=14),
-            tickfont=dict(size=11),
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0', size=11),
             autorange="reversed",
             categoryorder='total ascending'
         )
@@ -399,39 +537,42 @@ def generar_top_departamentos(df: pd.DataFrame, n_top: int = 10, theme: Optional
         x='DEPARTAMENTO', 
         y='CANTIDAD', 
         color='CANTIDAD',
-        color_continuous_scale=px.colors.sequential.Oranges,
-        text_auto=True,  # Mejor visualización
-        template=theme
+        color_continuous_scale='Oranges',
+        text_auto=True,
+        template='plotly_dark'
     )
     
     # Mejoras en la visualización
     fig.update_traces(
         texttemplate='%{value:,.0f}',
         textposition='outside',
-        marker_line_color='rgb(140,81,10)',
-        marker_line_width=1.5,
+        textfont=dict(color='#ffffff', size=11),
+        marker_line_color='rgba(255, 255, 255, 0.3)',
+        marker_line_width=1,
         opacity=0.9
     )
     
     fig.update_layout(
-        title_text=f"<b>Top {n_top} Departamentos más Afectados</b>", 
+        title_text=f"<b>📍 Top {n_top} Departamentos más Afectados</b>", 
+        title_font=dict(size=18, color='#ffffff'),
         xaxis_title="Departamento", 
         yaxis_title="Número de Casos", 
         xaxis_tickangle=-45, 
-        margin=dict(t=50, b=100, l=50, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=16, color='#000000'),
+        margin=dict(t=60, b=120, l=50, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0', size=10)
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         )
     )
     return fig
@@ -450,53 +591,39 @@ def generar_heatmap_conducta_anual(df: pd.DataFrame, theme: Optional[str] = None
         y=df_heatmap_log.index,
         color_continuous_scale='YlOrRd',
         aspect="auto", 
-        template=theme,
+        template='plotly_dark',
         text_auto=False,
         labels=dict(color="Log(1 + Casos)")
     )
 
     # Mejoras en la visualización
     fig.update_layout(
-        title_text="<b>Mapa de Calor: Evolución Temporal por Tipo de Delito (Log)</b>", 
+        title_text="<b>🌡️ Mapa de Calor: Evolución Temporal por Tipo de Delito (Log)</b>", 
+        title_font=dict(size=18, color='#ffffff'),
         xaxis_title="Año", 
         yaxis_title="Artículo de Delito", 
         xaxis_tickangle=-45, 
-        height=650, 
-        margin=dict(t=50, b=50, l=150, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=16, color='#000000'),
+        height=700, 
+        margin=dict(t=70, b=50, l=200, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14),
-            tickfont=dict(size=10)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0', size=10)
         ),
         yaxis=dict(
-            title_font=dict(size=14),
-            tickfont=dict(size=9)
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0', size=9)
         )
     )
     fig.update_coloraxes(
         colorbar_title='Log(1 + Casos)',
-        colorbar_title_font=dict(size=12),
-        colorbar_tickfont=dict(size=10)
+        colorbar_title_font=dict(size=12, color='#e0e0e0'),
+        colorbar_tickfont=dict(size=10, color='#b0b0b0')
     )
-    
-    # Agregar anotaciones para valores altos
-    if len(df_heatmap_pivot.columns) * len(df_heatmap_pivot.index) <= 50:  # Solo si no hay demasiadas celdas
-        for i, articulo in enumerate(df_heatmap_pivot.index):
-            for j, anio in enumerate(df_heatmap_pivot.columns):
-                valor = df_heatmap_pivot.iloc[i, j]
-                if valor > 0:  # Solo mostrar valores positivos
-                    fig.add_annotation(
-                        x=str(anio),
-                        y=articulo,
-                        text=str(int(valor)),
-                        showarrow=False,
-                        font=dict(size=8, color='white' if df_heatmap_log.iloc[i, j] > df_heatmap_log.values.mean() else 'black')
-                    )
     
     return fig
 
@@ -516,7 +643,7 @@ def generar_evolucion_top5_conductas(df: pd.DataFrame, theme: Optional[str] = No
         color='ARTICULO', 
         markers=True, 
         line_shape='spline', 
-        template=theme,
+        template='plotly_dark',
         line_dash_sequence=['solid', 'dash', 'dot', 'dashdot', 'longdash'],
         symbol_sequence=['circle', 'square', 'diamond', 'cross', 'x']
     )
@@ -524,36 +651,38 @@ def generar_evolucion_top5_conductas(df: pd.DataFrame, theme: Optional[str] = No
     # Mejoras en la visualización
     fig.update_traces(
         mode='lines+markers',
-        marker=dict(size=8),
-        line=dict(width=3)
+        marker=dict(size=9),
+        line=dict(width=3.5)
     )
     
     fig.update_layout(
-        title="<b>Evolución Anual de las 5 Conductas más Frecuentes</b>",
+        title="<b>📊 Evolución Anual de las 5 Conductas más Frecuentes</b>",
+        title_font=dict(size=18, color='#ffffff'),
         xaxis_title="Año", 
         yaxis_title="Cantidad de Casos", 
         legend_title="Artículo", 
         hovermode="x unified",
-        font=dict(color="#333333"),
+        font=dict(color="#e0e0e0"),
         hoverlabel=dict(
-            bgcolor="white", 
-            font_color="black",
+            bgcolor="rgba(20, 20, 30, 0.9)", 
+            font_color="white",
             font_size=12
         ), 
-        margin=dict(t=50, b=50, l=50, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        title_font=dict(size=16, color='#000000'),
+        margin=dict(t=70, b=50, l=50, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14),
-            tickformat="d"
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickformat="d",
+            tickfont=dict(color='#b0b0b0')
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         ),
         legend=dict(
             orientation="h",
@@ -561,22 +690,12 @@ def generar_evolucion_top5_conductas(df: pd.DataFrame, theme: Optional[str] = No
             y=-0.3,
             xanchor="center",
             x=0.5,
-            font=dict(size=11)
+            font=dict(size=11, color='#e0e0e0'),
+            bgcolor='rgba(20, 20, 30, 0.7)',
+            bordercolor='rgba(0, 212, 255, 0.3)',
+            borderwidth=1
         )
     )
-    
-    # Agregar área sombreada para mejor visualización
-    for trace in fig.data:
-        fig.add_trace(go.Scatter(
-            x=trace.x,
-            y=trace.y,
-            mode='lines',
-            line=dict(width=0),
-            showlegend=False,
-            hoverinfo='skip',
-            fill='toself',
-            fillcolor=trace.line.color.replace('rgb', 'rgba').replace(')', ', 0.1)')
-        ))
     
     return fig
 
@@ -593,10 +712,10 @@ def generar_distribucion_top_depto_bar(df: pd.DataFrame, depto_critico: str, the
         x='CANTIDAD', 
         y='ARTICULO', 
         orientation='h',
-        title=f'Composición del Delito en el Foco Geográfico: **{depto_critico}**',
-        template=theme,
+        title=f'<b>📋 Composición del Delito en: {depto_critico}</b>',
+        template='plotly_dark',
         color='CANTIDAD',
-        color_continuous_scale=px.colors.sequential.Reds,
+        color_continuous_scale='Reds',
         text_auto=True
     )
     
@@ -604,27 +723,29 @@ def generar_distribucion_top_depto_bar(df: pd.DataFrame, depto_critico: str, the
     fig.update_traces(
         texttemplate='%{value:,.0f}',
         textposition='outside',
-        marker_line_color='rgb(103,0,13)',
-        marker_line_width=1.5,
+        textfont=dict(color='#ffffff', size=11),
+        marker_line_color='rgba(255, 255, 255, 0.3)',
+        marker_line_width=1,
         opacity=0.9
     )
     
     fig.update_layout(
+        title_font=dict(size=16, color='#ffffff'),
         yaxis_title="Artículo de Delito", 
         xaxis_title="Número de Casos", 
-        margin=dict(t=50, b=50, l=150, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=15, color='#000000'),
+        margin=dict(t=60, b=50, l=200, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         ),
         yaxis=dict(
-            title_font=dict(size=14),
-            tickfont=dict(size=11),
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0', size=11),
             autorange="reversed",
             categoryorder='total ascending'
         )
@@ -654,10 +775,10 @@ def generar_distribucion_mensual(df: pd.DataFrame, delito_critico: str, theme: O
         df_mensual, 
         x='NOMBRE_MES', 
         y='CANTIDAD', 
-        title=f'Estacionalidad Mensual del Delito Prioritario: **{delito_critico}**',
-        template=theme,
+        title=f'<b>📅 Estacionalidad Mensual del Delito: {delito_critico}</b>',
+        template='plotly_dark',
         color='CANTIDAD',
-        color_continuous_scale=px.colors.sequential.Viridis,
+        color_continuous_scale='Viridis',
         text_auto=True,
         category_orders={"NOMBRE_MES": meses}
     )
@@ -666,29 +787,32 @@ def generar_distribucion_mensual(df: pd.DataFrame, delito_critico: str, theme: O
     fig.update_traces(
         texttemplate='%{value:,.0f}',
         textposition='outside',
-        marker_line_color='rgb(68,1,84)',
-        marker_line_width=1.5,
+        textfont=dict(color='#ffffff', size=11),
+        marker_line_color='rgba(255, 255, 255, 0.3)',
+        marker_line_width=1,
         opacity=0.9
     )
     
     fig.update_layout(
+        title_font=dict(size=16, color='#ffffff'),
         xaxis_title="Mes", 
         yaxis_title="Casos Acumulados", 
-        margin=dict(t=50, b=50, l=50, r=50),
-        plot_bgcolor='rgba(255,255,255,0.9)',
-        paper_bgcolor='rgba(255,255,255,0.9)',
-        font=dict(size=12, color='#333333'),
-        title_font=dict(size=15, color='#000000'),
+        margin=dict(t=60, b=50, l=50, r=50),
+        plot_bgcolor='rgba(15, 15, 25, 0.8)',
+        paper_bgcolor='rgba(15, 15, 25, 0.5)',
+        font=dict(size=12, color='#e0e0e0'),
         xaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14),
-            tickangle=0
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickangle=0,
+            tickfont=dict(color='#b0b0b0')
         ),
         yaxis=dict(
             showgrid=True,
-            gridcolor='rgba(200,200,200,0.3)',
-            title_font=dict(size=14)
+            gridcolor='rgba(100, 100, 150, 0.2)',
+            title_font=dict(size=14, color='#00d4ff'),
+            tickfont=dict(color='#b0b0b0')
         )
     )
     return fig
@@ -703,75 +827,106 @@ def main():
     
     # --- 1. INICIALIZACIÓN DE VARIABLES CRÍTICAS ---
     df = pd.DataFrame()
-    plotly_theme = None
+    plotly_theme = 'plotly_dark'  # Tema oscuro por defecto
     data_input = None
 
+    # Título principal con estilo profesional
+    col_title1, col_title2, col_title3 = st.columns([1, 3, 1])
+    with col_title2:
+        st.markdown("""
+        <div style="text-align: center; padding: 20px 0;">
+            <h1 style="color: #00d4ff; font-size: 2.8rem; margin-bottom: 10px;">
+                🌍 DASHBOARD DE DELITOS AMBIENTALES
+            </h1>
+            <p style="color: #b0b0b0; font-size: 1.2rem;">
+                Análisis Exploratorio de Tendencias y Focos Críticos
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    st.title("🌎 Dashboard-Delitos Ambientales")
-    st.markdown("Análisis Exploratorio de Tendencias y Focos Críticos.")
+    # --- SECCIÓN: INTEGRANTES DEL GRUPO ---
+    with st.container():
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 150, 255, 0.1)); 
+                    padding: 20px; border-radius: 10px; border: 1px solid rgba(0, 212, 255, 0.3);">
+            <h3 style="color: #00d4ff; text-align: center;">✨ GRUPO 3 - TALENTOTECH</h3>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 15px;">
+                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    👤 Edwin Hernan Velez Urrego
+                </div>
+                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    👤 Paola Andrea Garcia Tangarife
+                </div>
+                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    👤 Yeraldin Campo Espinal
+                </div>
+                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    👤 Valentina Restrepo Angel
+                </div>
+                <div style="background: rgba(20, 20, 30, 0.7); padding: 10px 15px; border-radius: 6px; border: 1px solid rgba(0, 212, 255, 0.2);">
+                    👤 Sara Melisa Londoño
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # --- SECCIÓN: INTEGRANTES DEL GRUPO (Ajuste solicitado) ---
-    st.info("""
-    ✨ **GRUPO 3 Talento_tech.**
-    
-    **Integrantes del Equipo:**
-    * Edwin hernan velez urrego
-    * Paola andrea garcia tangarife
-    * yeraldin campo espinal
-    * valentina restrepo angel
-    * sara melisa londoño
-    
-    """)
-    st.markdown("---")
-    
+    st.markdown("<hr>", unsafe_allow_html=True)
     
     # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
-   
-    with st.expander("🛠️ Configuración y Carga de Datos"):
+    with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
         
-        # Opción de carga de archivo (Define data_input)
-        uploaded_file = st.file_uploader(
-            "1. Cargar archivo CSV:",
-            type=["csv"],
-            help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
-        )
-        archivo_path_default = "BD_Delitos_ambientales.csv"
-        data_input = uploaded_file if uploaded_file is not None else archivo_path_default
+        col_config1, col_config2 = st.columns(2)
         
-        # Configuración del Tema (Define plotly_theme)
-        theme_options = {
-            "Claro (Default y Alto Contraste)": "plotly_white", 
-            "Sin Tema (Para usar solo CSS)": None,
-        }
-        selected_theme_key = st.selectbox(
-            "Tema de Visualización:", 
-            list(theme_options.keys())
-        )
-        # Asignación segura del tema
-        plotly_theme = theme_options[selected_theme_key]
+        with col_config1:
+            # Opción de carga de archivo
+            uploaded_file = st.file_uploader(
+                "**📁 Subir archivo CSV:**",
+                type=["csv"],
+                help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
+            )
+            archivo_path_default = "BD_Delitos_ambientales.csv"
+            data_input = uploaded_file if uploaded_file is not None else archivo_path_default
+            
+        with col_config2:
+            # Configuración del Tema
+            st.markdown("**🎨 Configuración de Visualización**")
+            st.caption("Tema optimizado para fondo oscuro")
         
-        st.subheader("Estado de Procesamiento")
+        st.subheader("🔍 Estado de Procesamiento")
 
     # --- Carga de Datos y Verificación de la Integridad ---
-    with st.spinner('Cargando, limpiando y estandarizando datos...'):
+    with st.spinner('🔄 Cargando, limpiando y estandarizando datos...'):
         df = cargar_y_limpiar_datos(data_input) 
 
     # Verificación de datos
     if df.empty:
-        st.error("⚠️ No se pudo cargar o procesar el archivo de datos. Por favor, suba un archivo CSV válido.")
+        st.error("""
+        ⚠️ **No se pudo cargar o procesar el archivo de datos.**  
+        Por favor, suba un archivo CSV válido o verifique la ruta del archivo.
+        """)
         return 
     
-    st.success("✅ ¡Datos cargados y listos para análisis!")
-    with st.expander("Ver Metadatos del DataFrame"):
-        st.dataframe(df.head(3))
-        st.info(f"Registros finales: **{len(df):,}**")
+    st.success("✅ **¡Datos cargados y listos para análisis!**")
     
-    st.markdown("---") # Separador entre el estado de carga y los KPIs
+    with st.expander("📊 **VISTA PREVIA DE LOS DATOS**"):
+        col_data1, col_data2 = st.columns([2, 1])
+        with col_data1:
+            st.dataframe(df.head(5).style.set_properties(**{
+                'background-color': 'rgba(20, 20, 30, 0.7)',
+                'color': '#e0e0e0',
+                'border-color': 'rgba(0, 212, 255, 0.2)'
+            }))
+        with col_data2:
+            st.metric("**Registros Totales**", f"{len(df):,}")
+            st.metric("**Columnas**", len(df.columns))
+            st.metric("**Años Cubiertos**", f"{df['ANIO'].min()} - {df['ANIO'].max()}")
+    
+    st.markdown("<hr>", unsafe_allow_html=True)
     
     # --------------------------------------------------------------------------
     # RESUMEN (KPIs DINÁMICOS)
     # --------------------------------------------------------------------------
-    st.subheader("📊 Panorama General: KPIs Clave")
+    st.subheader("📊 **PANORAMA GENERAL: KPIs CLAVE**")
     
     kpis = generar_kpis_y_analisis(df)
     
@@ -779,21 +934,24 @@ def main():
 
     with col_kpi1: 
         st.metric(
-            label="🚨 Total Casos Registrados", 
+            label="🚨 **TOTAL CASOS REGISTRADOS**", 
             value=f"{kpis.get('Total Casos', 0):,}",
-            delta=kpis.get('Rango Años', 'N/A')
+            delta=kpis.get('Rango Años', 'N/A'),
+            delta_color="off"
         )
 
     with col_kpi2:
         st.metric(
-            label="💥 Foco de Delito (Artículo Principal)",
-            value=kpis.get('Delito Mas Frecuente', 'N/A')
+            label="💥 **DELITO PRINCIPAL**",
+            value=kpis.get('Delito Mas Frecuente', 'N/A')[:20] + "..." if len(str(kpis.get('Delito Mas Frecuente', 'N/A'))) > 20 else kpis.get('Delito Mas Frecuente', 'N/A'),
+            delta="Artículo más frecuente"
         )
 
     with col_kpi3:
         st.metric(
-            label="📍 Geografía Crítica (Departamento)",
-            value=kpis.get('Departamento Mas Afecstado', 'N/A')
+            label="📍 **GEOGRAFÍA CRÍTICA**",
+            value=kpis.get('Departamento Mas Afecstado', 'N/A')[:15] + "..." if len(str(kpis.get('Departamento Mas Afecstado', 'N/A'))) > 15 else kpis.get('Departamento Mas Afecstado', 'N/A'),
+            delta="Departamento más afectado"
         )
 
     tendencia_value = f"{kpis.get('Tendencia General', 'N/A').upper()}"
@@ -801,23 +959,33 @@ def main():
     
     with col_kpi4:
         st.metric(
-            label="📈 Variación Histórica (%)",
+            label="📈 **VARIACIÓN HISTÓRICA**",
             value=tendencia_value,
             delta=f"{tendencia_delta:.1f}% vs Año Inicial",
             delta_color="inverse" if tendencia_delta < -5 else "normal"
         )
         
-    st.markdown("---") # Separador entre los KPIs y las Pestañas
+    st.markdown("<hr>", unsafe_allow_html=True)
 
     # --------------------------------------------------------------------------
     # 📑 ESTRUCTURA MODULAR CON PESTAÑAS
     # --------------------------------------------------------------------------
     
-    tab1, tab2, tab3 = st.tabs(["📉 Evolución Temporal", "🗺️ Concentración Geográfica", "🎯 Focos de Decisión"])
+    tab1, tab2, tab3 = st.tabs([
+        "📉 **EVOLUCIÓN TEMPORAL**", 
+        "🗺️ **CONCENTRACIÓN GEOGRÁFICA**", 
+        "🎯 **FOCOS DE DECISIÓN**"
+    ])
 
     # --- PESTAÑA EVOLUCIÓN TEMPORAL ---
     with tab1:
-        st.header("Análisis de la Dinámica del Delito Ambiental")
+        st.markdown("""
+        <div style="background: linear-gradient(90deg, rgba(0, 212, 255, 0.1), transparent); 
+                    padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2>📈 ANÁLISIS DE LA DINÁMICA DEL DELITO AMBIENTAL</h2>
+            <p style="color: #b0b0b0;">Evolución histórica y patrones temporales de los delitos ambientales</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         col_t1_1, col_t1_2 = st.columns(2)
         
@@ -829,11 +997,21 @@ def main():
             fig_heatmap = generar_heatmap_conducta_anual(df, theme=plotly_theme)
             st.plotly_chart(fig_heatmap, use_container_width=True)
             
-        st.info("💡 **Análisis de la Pestaña:** El gráfico de líneas muestra la trayectoria individual de los delitos más grandes. El Mapa de Calor (**se hizo** con escala logarítmica) revela visualmente cuáles delitos persisten o emergen con fuerza a lo largo de los años.")
+        st.info("""
+        💡 **ANÁLISIS DE LA PESTAÑA:**  
+        • El gráfico de líneas muestra la trayectoria individual de los delitos más significativos.  
+        • El Mapa de Calor (con escala logarítmica) revela visualmente qué delitos persisten o emergen con fuerza a lo largo de los años.
+        """)
 
     # --- PESTAÑA CONCENTRACIÓN GEOGRÁFICA Y TIPOLÓGICA ---
     with tab2:
-        st.header("Distribución de Casos por Ubicación y Tipología")
+        st.markdown("""
+        <div style="background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), transparent); 
+                    padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2>🗺️ DISTRIBUCIÓN DE CASOS POR UBICACIÓN Y TIPOLOGÍA</h2>
+            <p style="color: #b0b0b0;">Análisis espacial y clasificación de tipos de delito</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         col_t2_1, col_t2_2 = st.columns(2)
 
@@ -845,16 +1023,24 @@ def main():
             fig_conducta = generar_top_conductas(df, theme=plotly_theme)
             st.plotly_chart(fig_conducta, use_container_width=True)
             
-        st.info("💡 **Análisis de la Pestaña:** Se hizo una comparación de las concentraciones por Departamento (dónde ocurre) y por Artículo (qué ocurre). El gráfico de tendencia a largo plazo nos sirve de contexto general.")
+        st.info("""
+        💡 **ANÁLISIS DE LA PESTAÑA:**  
+        • Comparación de concentraciones por Departamento (dónde ocurre) y por Artículo (qué ocurre).  
+        • El gráfico de tendencia a largo plazo proporciona contexto histórico general.
+        """)
         
         fig_tendencia = generar_tendencia_anual(df, theme=plotly_theme)
         st.plotly_chart(fig_tendencia, use_container_width=True)
 
-
     # --- PESTAÑA FOCOS DE DECISIÓN (Conclusiones Visuales) ---
     with tab3:
-        st.header("Recomendaciones Estratégicas Basadas en Hallazgos")
-        st.markdown("**Se trabajó** para que la estrategia de mitigación se enfoque en los puntos de mayor impacto: Geografía Crítica y Estacionalidad.")
+        st.markdown("""
+        <div style="background: linear-gradient(90deg, rgba(255, 107, 0, 0.1), transparent); 
+                    padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h2>🎯 RECOMENDACIONES ESTRATÉGICAS BASADAS EN HALLAZGOS</h2>
+            <p style="color: #b0b0b0;">Enfoque en puntos críticos para maximizar impacto en mitigación</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Uso de kpis para obtener los focos
         depto_critico = kpis.get('Departamento Mas Afecstado', 'N/A')
@@ -864,29 +1050,81 @@ def main():
         
         # Desglose Geográfico (Gráfico de barras horizontal)
         with col_t3_1:
-            st.subheader(f"📍 1. Composición del Delito en: {depto_critico}")
-            st.markdown(f"**Recomendación:** Priorizar los **2-3 artículos** más largos en este gráfico para maximizar la reducción del delito en **{depto_critico}**.")
+            st.markdown(f"""
+            <div style="background: rgba(20, 20, 30, 0.7); padding: 15px; border-radius: 8px; border-left: 4px solid #00d4ff;">
+                <h3>📍 COMPOSICIÓN DEL DELITO EN: {depto_critico}</h3>
+                <p style="color: #b0b0b0;">
+                <strong>Recomendación:</strong> Priorizar los <strong>2-3 artículos</strong> más relevantes en este gráfico 
+                para maximizar la reducción del delito en <strong>{depto_critico}</strong>.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
             
             if depto_critico != 'N/A':
                 fig_dist_depto = generar_distribucion_top_depto_bar(df, depto_critico, theme=plotly_theme)
                 st.plotly_chart(fig_dist_depto, use_container_width=True)
             else:
-                st.warning("Datos insuficientes para desglose geográfico.")
+                st.warning("⚠️ **Datos insuficientes para desglose geográfico.**")
         
         # Estacionalidad del Delito Principal
         with col_t3_2:
-            st.subheader(f"⏱️ 2. Estacionalidad del Delito Principal: {delito_critico}")
-            st.markdown(f"**Recomendación:** Asignar recursos operativos 1-2 meses antes de los **picos de casos** observados en este gráfico de estacionalidad.")
+            st.markdown(f"""
+            <div style="background: rgba(20, 20, 30, 0.7); padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b00;">
+                <h3>⏱️ ESTACIONALIDAD DEL DELITO PRINCIPAL: {delito_critico}</h3>
+                <p style="color: #b0b0b0;">
+                <strong>Recomendación:</strong> Asignar recursos operativos <strong>1-2 meses antes</strong> 
+                de los <strong>picos de casos</strong> observados en este gráfico de estacionalidad.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
             
             if delito_critico != 'N/A':
                 fig_dist_mensual = generar_distribucion_mensual(df, delito_critico, theme=plotly_theme)
                 st.plotly_chart(fig_dist_mensual, use_container_width=True)
             else:
-                st.warning("Datos insuficientes para análisis de estacionalidad.")
+                st.warning("⚠️ **Datos insuficientes para análisis de estacionalidad.**")
 
     # --- Pie de página profesional ---
-    st.markdown("---")
-    st.caption("Dashboard desarrollado para el **Proyecto Final de Análisis de Datos** | Diseño con Streamlit y Plotly.")
+    st.markdown("<hr>", unsafe_allow_html=True)
+    
+    col_footer1, col_footer2, col_footer3 = st.columns(3)
+    
+    with col_footer1:
+        st.markdown("""
+        <div style="text-align: center;">
+            <p style="color: #00d4ff; font-weight: bold;">🌍 IMPACTO AMBIENTAL</p>
+            <p style="color: #888888; font-size: 0.9rem;">Análisis para la preservación</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_footer2:
+        st.markdown("""
+        <div style="text-align: center;">
+            <p style="color: #00d4ff; font-weight: bold;">📊 DATOS CIENTÍFICOS</p>
+            <p style="color: #888888; font-size: 0.9rem;">Decisiones basadas en evidencia</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_footer3:
+        st.markdown("""
+        <div style="text-align: center;">
+            <p style="color: #00d4ff; font-weight: bold;">🎯 ENFOQUE ESTRATÉGICO</p>
+            <p style="color: #888888; font-size: 0.9rem;">Maximizando la eficiencia</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+        <p style="color: #666666; font-size: 0.9rem;">
+        Dashboard desarrollado para el <strong>Proyecto Final de Análisis de Datos</strong> | 
+        Tecnologías: Streamlit, Plotly, Pandas | 
+        <strong>GRUPO 3 - TALENTOTECH</strong>
+        </p>
+        <p style="color: #444444; font-size: 0.8rem; margin-top: 10px;">
+        © 2024 Análisis de Delitos Ambientales. Todos los derechos reservados.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 if __name__ == '__main__':
