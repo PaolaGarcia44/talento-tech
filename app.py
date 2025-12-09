@@ -364,11 +364,11 @@ def generar_top_conductas(df: pd.DataFrame, n_top: int = 8, theme: Optional[str]
         opacity=0.9
     )
     
+    # CORRECCIÓN: Se eliminó el yaxis duplicado
     fig.update_layout(
         title_text=f"<b>Top {n_top} Artículos de Conductas Delictivas Ambientales</b>", 
         xaxis_title="Número de Casos", 
         yaxis_title="Artículo de Delito", 
-        yaxis={'autorange': "reversed", 'categoryorder': 'total ascending'}, 
         margin=dict(t=50, b=50, l=150, r=50),
         plot_bgcolor='rgba(255,255,255,0.9)',
         paper_bgcolor='rgba(255,255,255,0.9)',
@@ -381,7 +381,9 @@ def generar_top_conductas(df: pd.DataFrame, n_top: int = 8, theme: Optional[str]
         ),
         yaxis=dict(
             title_font=dict(size=14),
-            tickfont=dict(size=11)
+            tickfont=dict(size=11),
+            autorange="reversed",
+            categoryorder='total ascending'
         )
     )
     return fig
@@ -608,7 +610,6 @@ def generar_distribucion_top_depto_bar(df: pd.DataFrame, depto_critico: str, the
     )
     
     fig.update_layout(
-        yaxis={'autorange': "reversed", 'categoryorder': 'total ascending'}, 
         yaxis_title="Artículo de Delito", 
         xaxis_title="Número de Casos", 
         margin=dict(t=50, b=50, l=150, r=50),
@@ -623,7 +624,9 @@ def generar_distribucion_top_depto_bar(df: pd.DataFrame, depto_critico: str, the
         ),
         yaxis=dict(
             title_font=dict(size=14),
-            tickfont=dict(size=11)
+            tickfont=dict(size=11),
+            autorange="reversed",
+            categoryorder='total ascending'
         )
     )
     return fig
