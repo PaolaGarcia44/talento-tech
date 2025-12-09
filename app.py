@@ -33,8 +33,8 @@ REEMPLAZOS_CARACTERES: Dict[str, str] = {
     "ÃÚ": "U", "ÃA": "A", "ÃE": "E", "ÃI": "I", "ÃO": "O", "ÃU": "U", "á": "A", 
     "é": "E", "í": "I", "ó": "O", "ú": "U", "Ã¼": "U", "Ãœ": "U", "Ü": "U", 
     "ü": "U", "¿": "", "?": "", "¡": "", "!": "", "Â¿": "", "Â¡": "",
-    "ï¿½": "", "Â": "", "â€œ": "", "â€": "", "â€™": "", "â€¢": "", "â€“": "",
-    "â€”": "", "\u2122": "", "\u00AE": "", "\u00A9": "", "\u00BA": "", "\u00AA": "", 
+    "ï¿½": "", "Â": "", "â€œ": "", "â€": "", "â€™": "", "â€¢": "", "â€": "",
+    "â€\"": "", "\u2122": "", "\u00AE": "", "\u00A9": "", "\u00BA": "", "\u00AA": "", 
     "\u20AC": "", "$": "", "\u00A3": "", "\u00BC": "", "\u00BD": "", "\u00BE": "",
 }
 
@@ -841,56 +841,55 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    
-  # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
-with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
-    
-    # Versión simple centrada
-    st.markdown("""
-    <div style="text-align: center;">
-    """, unsafe_allow_html=True)
-    
-    # Opción de carga de archivo
-    uploaded_file = st.file_uploader(
-        "**📁 Subir archivo CSV:**",
-        type=["csv"],
-        help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
-    )
-    archivo_path_default = "BD_Delitos_ambientales.csv"
-    data_input = uploaded_file if uploaded_file is not None else archivo_path_default
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.subheader("🔍 Estado de Procesamiento")
+    # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
+    with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
+        
+        # Versión simple centrada
+        st.markdown("""
+        <div style="text-align: center;">
+        """, unsafe_allow_html=True)
+        
+        # Opción de carga de archivo
+        uploaded_file = st.file_uploader(
+            "**📁 Subir archivo CSV:**",
+            type=["csv"],
+            help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
+        )
+        archivo_path_default = "BD_Delitos_ambientales.csv"
+        data_input = uploaded_file if uploaded_file is not None else archivo_path_default
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.subheader("🔍 Estado de Procesamiento")
 
-# --- Carga de Datos y Verificación de la Integridad ---
-with st.spinner('🔄 Cargando, limpiando y estandarizando datos...'):
-    df = cargar_y_limpiar_datos(data_input) 
+    # --- Carga de Datos y Verificación de la Integridad ---
+    with st.spinner('🔄 Cargando, limpiando y estandarizando datos...'):
+        df = cargar_y_limpiar_datos(data_input) 
 
-# Verificación de datos
-if df.empty:
-    st.error("""
-    ⚠️ **No se pudo cargar o procesar el archivo de datos.**  
-    Por favor, suba un archivo CSV válido o verifique la ruta del archivo.
-    """)
-    return 
+    # Verificación de datos
+    if df.empty:
+        st.error("""
+        ⚠️ **No se pudo cargar o procesar el archivo de datos.**  
+        Por favor, suba un archivo CSV válido o verifique la ruta del archivo.
+        """)
+        return 
 
-st.success("✅ **¡Datos cargados y listos para análisis!**")
+    st.success("✅ **¡Datos cargados y listos para análisis!**")
 
-with st.expander("📊 **VISTA PREVIA DE LOS DATOS**"):
-    col_data1, col_data2 = st.columns([2, 1])
-    with col_data1:
-        st.dataframe(df.head(5).style.set_properties(**{
-            'background-color': 'rgba(20, 20, 30, 0.7)',
-            'color': '#e0e0e0',
-            'border-color': 'rgba(0, 212, 255, 0.2)'
-        }))
-    with col_data2:
-        st.metric("**Registros Totales**", f"{len(df):,}")
-        st.metric("**Columnas**", len(df.columns))
-        st.metric("**Años Cubiertos**", f"{df['ANIO'].min()} - {df['ANIO'].max()}")
+    with st.expander("📊 **VISTA PREVIA DE LOS DATOS**"):
+        col_data1, col_data2 = st.columns([2, 1])
+        with col_data1:
+            st.dataframe(df.head(5).style.set_properties(**{
+                'background-color': 'rgba(20, 20, 30, 0.7)',
+                'color': '#e0e0e0',
+                'border-color': 'rgba(0, 212, 255, 0.2)'
+            }))
+        with col_data2:
+            st.metric("**Registros Totales**", f"{len(df):,}")
+            st.metric("**Columnas**", len(df.columns))
+            st.metric("**Años Cubiertos**", f"{df['ANIO'].min()} - {df['ANIO'].max()}")
 
-st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("<hr>", unsafe_allow_html=True)
     
     # --------------------------------------------------------------------------
     # RESUMEN (KPIs DINÁMICOS)
@@ -1053,7 +1052,6 @@ st.markdown("<hr>", unsafe_allow_html=True)
             else:
                 st.warning("⚠️ **Datos insuficientes para análisis de estacionalidad.**")
 
-    
     # --- Pie de página profesional ---
     st.markdown("<hr>", unsafe_allow_html=True)
     
