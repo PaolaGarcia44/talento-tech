@@ -843,24 +843,28 @@ def main():
 
     
     # 🔗 CONFIGURACIÓN Y CARGA DE DATOS 
-    with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
+  with st.expander("⚙️ **CONFIGURACIÓN Y CARGA DE DATOS**", expanded=True):
     
-    # Versión simple centrada
-    st.markdown("""
-    <div style="text-align: center;">
-    """, unsafe_allow_html=True)
+    # Crear columnas para centrar el contenido
+    col_centro1, col_centro2, col_centro3 = st.columns([1, 2, 1])
     
-    # Opción de carga de archivo
-    uploaded_file = st.file_uploader(
-        "**📁 Subir archivo CSV:**",
-        type=["csv"],
-        help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
-    )
-    archivo_path_default = "BD_Delitos_ambientales.csv"
-    data_input = uploaded_file if uploaded_file is not None else archivo_path_default
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
+    with col_centro2:
+        # Contenedor para centrar todo el contenido
+        st.markdown("""
+        <div style="text-align: center;">
+        """, unsafe_allow_html=True)
+        
+        # Opción de carga de archivo
+        uploaded_file = st.file_uploader(
+            "**📁 Subir archivo CSV:**",
+            type=["csv"],
+            help="Sube tu archivo 'BD_Delitos_ambientales.csv' aquí."
+        )
+        archivo_path_default = "BD_Delitos_ambientales.csv"
+        data_input = uploaded_file if uploaded_file is not None else archivo_path_default
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
     st.subheader("🔍 Estado de Procesamiento")
 
     # --- Carga de Datos y Verificación de la Integridad ---
